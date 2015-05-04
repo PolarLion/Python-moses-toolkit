@@ -1,0 +1,18 @@
+#设置训练语料的路径
+training_path = "~/corpora/"
+#设置tuning语料的路径
+tuning_path = "~/corpora/"
+#设置lm路径
+lm_path = "~/lm/"
+#设置working路径
+working_path = "~/working/"
+#源语言代码
+source_id = "zh-cn"
+#目标语言代码
+target_id = "en"
+#设置moses的路径
+mosesdecoder_path = "/opt/translation/moses/"
+#设置irstlm的路径
+irstlm_path = "/opt/translation/irstlm/"
+#设置giza路径
+giza_path = "/opt/translation/giza-pp/"
