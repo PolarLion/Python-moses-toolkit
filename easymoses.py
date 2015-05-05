@@ -3,6 +3,7 @@ import os
 import re
 import ConfigInfo
 
+######################### corpus preparation  ###########################
 
 def tokenisation (cfg_info) :
 	print "tokenisation"
@@ -47,15 +48,11 @@ def limiting_sentence_length (cfg_info) :
 		+ cfg_info.training_path + "../" + cfg_info.filename + ".clean  1 " + cfg_info.sentence_length)
 	print "finish 1"
 
-
-	
-def corpus_preparation (cfg_info) :
-	tokenisation (cfg_info)
-	truecaser (cfg_info)
-	truecasing (cfg_info)
-	limiting_sentence_length (cfg_info)
+######################### corpus preparation  ###########################
 
 
+
+#########################  language model traning #######################
 def generate_sb (cfg_info) :
 	print "generate .sb. "
 	os.system (cfg_info.irstlm_path + "bin/add-start-end.sh < " \
@@ -80,14 +77,11 @@ def generate_blm (cfg_info) :
 		+ cfg_info.lm_path + cfg_info.filename + ".arpa." + cfg_info.target_id + " " \
 		+ cfg_info.lm_path + cfg_info.filename + ".blm." + cfg_info.target_id)
 
-def language_model_training (cfg_info) :
-	print "language model training"
-	generate_sb (cfg_info)
-	generate_lm (cfg_info) 
-	generate_arpa (cfg_info)
-	generate_blm (cfg_info) 
-	print "finsih language model training"
+#########################  language model traning #######################
 
+
+
+#########################  training ranslation system ###########################################
 
 def training_translation_system (cfg_info) :
 	print "training translation system"
@@ -131,11 +125,34 @@ def tuning_process (cfg_info) :
 		+ cfg_info.mosesdecoder_path + "bin/moses " + cfg_info.working_path + "train/model/moses.ini " \
 		+ "--mertdir " + cfg_info.mosesdecoder_path + "bin/ &> " + cfg_info.working_path + "mert.out &")
 
+#########################  training ranslation system ###########################################
+
+
+
+def corpus_preparation (cfg_info) :
+	print "corpus preparation"
+	tokenisation (cfg_info)
+	truecaser (cfg_info)
+	truecasing (cfg_info)
+	limiting_sentence_length (cfg_info)
+	print "finish corpus preparation"
+
 def tuning (cfg_info) :
 	print "tuning"
 	#tuning_tokenizer (cfg_info)
 	#tuning_truecase (cfg_info)
 	tuning_process (cfg_info)
+	print "finish tuning"
+
+def language_model_training (cfg_info) :
+	print "language model training"
+	generate_sb (cfg_info)
+	generate_lm (cfg_info) 
+	generate_arpa (cfg_info)
+	generate_blm (cfg_info) 
+	print "finsih language model training"
+
+
 
 
 def easymoses ():
