@@ -4,9 +4,9 @@ training_path = "~/corpora/cht/training/"
 #设置tuning语料的路径
 tuning_path = "~/corpora/cht"
 #设置lm路径
-lm_path = "~/lm/"
+lm_path = "~/lm/cht/"
 #设置working路径
-working_path = "~/working/"
+working_path = "~/working/cht/"
 #源语言代码
 source_id = "zh-cn"
 #目标语言代码
