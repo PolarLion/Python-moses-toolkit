@@ -16,7 +16,6 @@ def tokenisation (cfg_info) :
 			+ cfg_info.training_path + "../" + cfg_info.filename + ".tok." + cfg_info.source_id)
 	print "finish 2"
 
-
 def truecaser (cfg_info) :
 	print "truecaser"
 	os.system (cfg_info.mosesdecoder_path + "scripts/recaser/train-truecaser.perl --model " \
