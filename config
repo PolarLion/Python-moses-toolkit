@@ -1,7 +1,8 @@
+filename = "cht.train"
 #设置训练语料的路径
-training_path = "~/corpora/"
+training_path = "~/corpora/cht/training/"
 #设置tuning语料的路径
-tuning_path = "~/corpora/"
+tuning_path = "~/corpora/cht"
 #设置lm路径
 lm_path = "~/lm/"
 #设置working路径
@@ -12,6 +13,8 @@ source_id = "zh-cn"
 target_id = "en"
 #设置moses的路径
 mosesdecoder_path = "/opt/translation/moses/"
+#设置句长限制
+sentence_length = "80"
 #设置irstlm的路径
 irstlm_path = "/opt/translation/irstlm/"
 #设置giza路径
