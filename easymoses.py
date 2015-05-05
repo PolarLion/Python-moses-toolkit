@@ -89,11 +89,22 @@ def language_model_training (cfg_info) :
 	print "finsih language model training"
 
 
+def training_translation_system (cfg_info) :
+	os.system ("nohup nice " + cfg_info.mosesdecoder_path + "scripts/training/train-model.perl " \
+		+ "-mgiza -mgiza-cpus 16 -cores 2 -root-dir " + cfg_info.working_path + "train -corpus " \
+		+ cfg_info.training_path + "../" + cfg_info.filename + ".clean " \
+		+ "-f " + cfg_info.source_id + " -e " + cfg_info.target_id + " -alignment grow-diag-final-and " \
+		+ "-reordering msd-bidirectional-fe -lm 0:3:" + cfg_info.lm_path + cfg_info.filename + ".blm." \
+		+ cfg_info.target_id + ":8 " \
+		+ "-external-bin-dir " + cfg_info.giza_path + "bin " \
+		+ " >& " + cfg_info.working_path + "training.out &" )
+
 
 
 
 def easymoses ():
 	cfg_info = ConfigInfo.ConfigInfo("config")
 	#corpus_preparation (cfg_info)
-	language_model_training (cfg_info)
+	#language_model_training (cfg_info)
+	training_translation_system (cfg_info)
 

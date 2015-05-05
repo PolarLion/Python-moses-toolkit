@@ -4,9 +4,9 @@ training_path = "~/corpora/cht/training/"
 #设置tuning语料的路径
 tuning_path = "~/corpora/cht"
 #设置lm路径
-lm_path = "~/lm/cht/"
+lm_path = "$HOME/lm/cht/"
 #设置working路径
-working_path = "~/working/cht/"
+working_path = "$HOME/working/cht/"
 #源语言代码
 source_id = "zh-cn"
 #目标语言代码
@@ -18,4 +18,4 @@ sentence_length = "80"
 #设置irstlm的路径
 irstlm_path = "/opt/translation/irstlm/"
 #设置giza路径
-giza_path = "/opt/translation/giza-pp/"
+giza_path = "/opt/translation/mgizapp/"
