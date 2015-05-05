@@ -6,6 +6,7 @@ import re
 
 class ConfigInfo :
 	filename = ""
+	tuning_file = ""
 	training_path = ""
 	tuning_path = ""
 	lm_path = ""
@@ -25,6 +26,10 @@ class ConfigInfo :
 			if  re.match (r'filename( *)=( *)".*"', line) : 
 				print line.split('\"')[1]
 				self.filename = line.split('\"')[1]
+
+			elif  re.match (r'tuning_file( *)=( *)".*"', line) : 
+				print line.split('\"')[1]
+				self.tuning_file = line.split('\"')[1]
 
 			elif  re.match (r'training_path( *)=( *)".*"', line) : 
 				print line.split('\"')[1]

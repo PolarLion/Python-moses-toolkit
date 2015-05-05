@@ -1,8 +1,10 @@
 filename = "cht.train"
+#设置tuning文件名称
+tuning_file = "CHT.Dev"
 #设置训练语料的路径
 training_path = "~/corpora/cht/training/"
 #设置tuning语料的路径
-tuning_path = "~/corpora/cht"
+tuning_path = "~/corpora/cht/dev/"
 #设置lm路径
 lm_path = "$HOME/lm/cht/"
 #设置working路径
