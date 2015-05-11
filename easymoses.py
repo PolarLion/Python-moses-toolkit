@@ -78,6 +78,10 @@ def generate_blm (cfg_info) :
 
 #########################  language model traning #######################
 
+path_to_nplm = "/opt/translation/nplm/"
+input_model = "~/corpora/nplmt/model.20"
+output_model = "/home/xwshi/corpora/nplmt/output_model.nnlm"
+train_ngrams = "~/corpora/nplmt/train.ngrams"
 
 
 #########################  training ranslation system ###########################################
@@ -85,12 +89,13 @@ def generate_blm (cfg_info) :
 def training_translation_system (cfg_info) :
 	print "training translation system"
 	os.system ("nohup nice " + cfg_info.mosesdecoder_path + "scripts/training/train-model.perl " \
-		+ "-mgiza -mgiza-cpus 16 -cores 2 -root-dir " + cfg_info.working_path + "train -corpus " \
+		+ " -mgiza -mgiza-cpus 16 -cores 2 -root-dir " + cfg_info.working_path + "train -corpus " \
 		+ cfg_info.training_path + "../" + cfg_info.filename + ".clean " \
-		+ "-f " + cfg_info.source_id + " -e " + cfg_info.target_id + " -alignment grow-diag-final-and " \
-		+ "-reordering msd-bidirectional-fe -lm 0:3:" + cfg_info.lm_path + cfg_info.filename + ".blm." \
+		+ " -f " + cfg_info.source_id + " -e " + cfg_info.target_id + " -alignment grow-diag-final-and " \
+		+ " -reordering msd-bidirectional-fe -lm 0:3:" + cfg_info.lm_path + cfg_info.filename + ".blm." \
 		+ cfg_info.target_id + ":8 " \
-		+ "-external-bin-dir " + cfg_info.giza_path + "bin " \
+		+ " -reordering msd-bidirectional-fe -lm 0:4:" + output_model + ":8 " \
+		+ " -external-bin-dir " + cfg_info.giza_path + "bin " \
 		+ " >& " + cfg_info.working_path + "training.out &" )
 	print "finish training translation system"
 
@@ -126,8 +131,6 @@ def tuning_process (cfg_info) :
 
 #########################  training ranslation system ###########################################
 
-
-
 def corpus_preparation (cfg_info) :
 	print "corpus preparation"
 	tokenisation (cfg_info)
@@ -151,13 +154,26 @@ def language_model_training (cfg_info) :
 	generate_blm (cfg_info) 
 	print "finsih language model training"
 
+######################## nplm ##########################################
+
+
+def averageNullEmbedding (cfg_info) :
+	print "averageNullEmbedding"
+	os.system (cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/averageNullEmbedding.py " \
+		+ " -p " + path_to_nplm + "python/ " \
+		+ " -i " + input_model \
+		+ " -o " + output_model \
+		+ " -t " + train_ngrams)
+	print "finish averageNullEmbedding"
+
 
 
 
 def easymoses ():
-	cfg_info = ConfigInfo.ConfigInfo("config")
+	cfg_info = ConfigInfo.ConfigInfo("moses.conf")
 	#corpus_preparation (cfg_info)
 	#language_model_training (cfg_info)
 	#training_translation_system (cfg_info)
 	tuning (cfg_info)
+	#averageNullEmbedding (cfg_info)
 
