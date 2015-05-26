@@ -167,6 +167,99 @@ def averageNullEmbedding (cfg_info) :
 	print "finish averageNullEmbedding"
 
 
+####################### testing #############################################
+
+test_corpus_path = "~/corpora/cht/test/"
+test_filename = "CHT.Test"
+
+def t_start (cfg_info) :
+	os.system (cfg_info.mosesdecoder_path + "bin/moses -f " \
+		+ cfg_info.working_path + "moses.ini")
+	os.system ("mkdir " + cfg_info.working_path + "binarised-model ")
+	os.system (cfg_info.mosesdecoder_path + "bin/processPhraseTableMin " \
+		+ " -in " + cfg_info.working_path + "train/model/phrase-table.gz -nscores 4 " \
+		+ " -out " + cfg_info.working_path + "binarised-model/phrase-table " )
+	os.system (cfg_info.mosesdecoder_path + "bin/processLexicalTableMin " \
+		+ " -in " + cfg_info.working_path + "train/model/reordering-table.wbe-msd-bidirectional-fe.gz " \
+		+ " -out " + cfg_info.working_path + "binarised-model/reordering-table")
+
+
+
+def t_tokenisation (cfg_info) :
+	print "tokenisation"
+	os.system (cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.target_id 
+		+ " < " + test_corpus_path + test_filename + "." + cfg_info.target_id + " > "
+		+ test_corpus_path + test_filename + ".tok." + cfg_info.target_id)
+	print "finish " + test_corpus_path + test_filename + cfg_info.source_id + " tokenisation " 
+	os.system (cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.source_id 
+		+ " < " + test_corpus_path + test_filename + "." + cfg_info.source_id + " > "
+ 		+ test_corpus_path + test_filename + ".tok." + cfg_info.source_id)
+	print "finish " + test_corpus_path + test_filename + cfg_info.source_id + " tokenisation " 
+
+
+#def truecaser (cfg_info) :
+#	print "truecaser" 
+#	os.system (cfg_info.mosesdecoder_path + "scripts/recaser/train-truecaser.perl --model " \
+#		+ cfg_info.train ing_path + "../truecase-model." + cfg_info.target_id + " --corpus " \
+#	 	+ cfg_info.training_path + "../" + cfg_info.filename + ".tok." + cfg_info.target_id)		
+#	print "finish 1"
+#	os.system (cfg_info.mosesdecoder_path + "scripts/recaser/train-truecaser.perl --model " \
+#	 	+ cfg_info.traini ng_path + "../truecase-model." + cfg_info.source_id + " --corpus " \
+#		+ cfg_info.training_path + "../" + cfg_info.filename + ".tok." + cfg_info.source_id)		
+#
+#	print "finish 2"
+
+
+def t_truecasing (cfg_info) :
+	print "truecasing" 
+	os.system (cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " \
+	 	+ cfg_info.training_path + "../truecase-model." + cfg_info.target_id \
+		+ " < " + test_corpus_path + test_filename + ".tok." + cfg_info.target_id \
+		+ " > " + test_corpus_path + test_filename + ".true." + cfg_info.target_id)
+	print "finish " + test_corpus_path + test_filename + cfg_info.target_id
+	os.system (cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " \
+		+ cfg_info.training_path + "../truecase-model." + cfg_info.source_id \
+		+ " < " + test_corpus_path + test_filename + ".tok." + cfg_info.source_id \
+		+ " > " + test_corpus_path + test_filename + ".true." + cfg_info.source_id)
+	print "finish " + test_corpus_path + test_filename + cfg_info.source_id
+
+def t_filter_model_given_input (cfg_info) :
+	print "filter model given input"
+	os.system (cfg_info.mosesdecoder_path + "scripts/training/filter-model-given-input.pl " \
+			+ cfg_info.working_path + "filtered-" + test_filename +  " " + cfg_info.working_path + "moses.ini " \
+		+ test_corpus_path + test_filename + ".true." + cfg_info.source_id \
+		+ " -Binarizer " + cfg_info.mosesdecoder_path + "bin/processPhraseTableMin" )
+	print "finish filter model given input"
+
+def run_test (cfg_info) :
+	print "start run moses"
+	os.system ( "nohup nice " + cfg_info.mosesdecoder_path + "bin/moses -f " \
+		+ cfg_info.working_path + "moses.ini " \
+		#+ cfg_info.working_path + "filtered-" + test_filename + "/moses.ini " \
+		#+ " -i " + cfg_info.working_path + "filtered-" + test_filename + "/input.115575 " \
+		+ " < " + test_corpus_path + test_filename + ".true." + cfg_info.source_id \
+		+ " > " + cfg_info.working_path + test_filename + ".translated." + cfg_info.target_id \
+		+ " 2> " + cfg_info.working_path + test_filename + ".out ")
+	print "finish moses"
+	print "start multi bleu"
+	os.system (cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl " \
+		+ " -lc " + test_corpus_path + test_filename + ".true." + cfg_info.target_id \
+		+ " < " + cfg_info.working_path + test_filename + ".translated." + cfg_info.target_id )
+
+def testing (cfg_info) :
+	print "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	#t_start (cfg_info)
+	print "******************************************************************"
+	t_tokenisation (cfg_info)
+	t_truecasing (cfg_info)
+	#t_filter_model_given_input (cfg_info)
+	run_test (cfg_info)
+
+#########################  test  ###########################
+
+
+
+
 
 
 def easymoses ():
@@ -174,6 +267,7 @@ def easymoses ():
 	#corpus_preparation (cfg_info)
 	#language_model_training (cfg_info)
 	#training_translation_system (cfg_info)
-	tuning (cfg_info)
+	#tuning (cfg_info)
 	#averageNullEmbedding (cfg_info)
+	testing (cfg_info)
 
