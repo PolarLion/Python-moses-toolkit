@@ -358,7 +358,7 @@ def t_filter_model_given_input (cfg_info) :
 def run_test (cfg_info) :
 	print "start run moses"
 	os.system ( "nohup nice " + cfg_info.mosesdecoder_path + "bin/moses "
-		+ "-threads " + cfg_info.threads
+		+ " -threads " + cfg_info.threads
 		+ " -f " + easy_tuning + "moses.ini " 
 		#+ cfg_info.working_path + "filtered-" + test_filename + "/moses.ini " \
 		#+ " -i " + cfg_info.working_path + "filtered-" + test_filename + "/input.115575 " \
@@ -367,9 +367,9 @@ def run_test (cfg_info) :
 		+ " 2> " + easy_evaluation + cfg_info.testfilename + ".out ")
 	os.system (cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl " 
 		+ " -lc " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.target_id 
-		+ " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id )
+		+ " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id)
 
-def view_result () :
+def view_result (cfg_info) :
 	translation_result = open (easy_evaluation + "translation_result.txt", 'w')
 	translated = open (easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id, 'r')
 	source = open (easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.source_id, 'r')
@@ -377,13 +377,13 @@ def view_result () :
 	count = 0
 	for tran_line in translated :
 		source_line = source.readline ()
-		if source_line : translation_result.write ("s " + str(count) + ": " + source_line)
+		if source_line : translation_result.write ("[#" + str(count) + "] " + source_line)
 		else : 
 			print "eeeeeeeeeerror  " + str (count)
 			break
-		translation_result.write ("t " + str(count) + ": " + tran_line)
+		translation_result.write ("[" + str(count) + "] " + tran_line)
 		target_line = target.readline ()
-		if target_line : translation_result.write ("r " + str(count) + ": " + target_line) 
+		if target_line : translation_result.write ("[ref] " + target_line) 
 		else :
 			print "errrrrrrrrrrror" + str (count)
 			break
@@ -398,7 +398,7 @@ def testing (cfg_info) :
 	# t_truecasing (cfg_info)
 	#t_filter_model_given_input (cfg_info)
 	# run_test (cfg_info)
-	view_result ()
+	view_result (cfg_info)
 
 #########################  test  ###########################
 
