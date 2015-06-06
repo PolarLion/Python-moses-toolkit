@@ -409,8 +409,8 @@ def easymoses ():
 	# corpus_preparation (cfg_info)
 	# language_model_training (cfg_info)
 	# training_translation_system (cfg_info)
-	tuning (cfg_info)
-	# testing (cfg_info)
+	# tuning (cfg_info)
+	testing (cfg_info)
 	#nplm (cfg_info)
 	
 	# bnplm (cfg_info)
