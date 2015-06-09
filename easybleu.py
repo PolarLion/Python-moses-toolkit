@@ -61,12 +61,3 @@ if __name__ == "__main__":
     r = "Haven ’ t you arrived at the company yet ?"
 
     bleu (t, r, 4)
-    # bleu1 = 1.0
-    # bleu2 = 1.0
-    # for i in range (0, 4) :
-    #     p1 = score (t1, r, i+1)
-    #     p2 = score (t2, r, i+1)
-    #     bleu1 *= p1
-    #     bleu2 *= p2
-    #     print "bleu1", bleu1 * min (1, len (t1) * 1.0 / len (r))
-    #     print "bleu2", bleu2 * min (1, len (t2) * 1.0 / len (r))
