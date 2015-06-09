@@ -57,9 +57,10 @@ def bleu (translated, reference, n) :
 
 
 if __name__ == "__main__":
-    t1 = "You still haven 't arrived at the company ?"
+    t = "You still haven 't arrived at the company ?"
     r = "Haven ’ t you arrived at the company yet ?"
-    bleu (t1, r, 4)
+
+    bleu (t, r, 4)
     # bleu1 = 1.0
     # bleu2 = 1.0
     # for i in range (0, 4) :
