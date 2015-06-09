@@ -163,7 +163,6 @@ def limiting_sentence_length (cfg_info) :
 		+ " " + easy_corpus + cfg_info.filename + ".clean  1 " + cfg_info.sentence_length
 	write_step (command1)
 	os.system (command1)
-
 ######################### corpus preparation  ###########################
 
 #########################  language model traning #######################
@@ -194,7 +193,6 @@ def generate_blm (cfg_info) :
 		+ " " + easy_lm + cfg_info.filename + ".blm." + cfg_info.target_id
 	write_step (command1)
 	os.system (command1)
-
 #########################  language model traning #######################
 
 #########################  training ranslation system ###########################################
@@ -256,19 +254,19 @@ def tuning_process (cfg_info) :
 #########################  training translation system ###########################################
 
 def corpus_preparation (cfg_info) :
-	print "corpus preparation"
+	# print "corpus preparation"
 	tokenisation (cfg_info)
 	truecaser (cfg_info)
 	truecasing (cfg_info)
 	limiting_sentence_length (cfg_info)
-	print "finish corpus preparation"
+	# print "finish corpus preparation"
 
 def tuning (cfg_info) :
-	print "tuning"
+	# print "tuning"
 	tuning_tokenizer (cfg_info)
 	tuning_truecase (cfg_info)
 	tuning_process (cfg_info)
-	print "finish tuning"
+	# print "finish tuning"
 
 def language_model_training (cfg_info) :
 	generate_sb (cfg_info)
@@ -276,49 +274,21 @@ def language_model_training (cfg_info) :
 	generate_arpa (cfg_info)
 	generate_blm (cfg_info)
 
-######################## nplm ##########################################
 
-# path_to_nplm = "/opt/translation/nplm/"
-
-# input_model = "~/corpora/giga/nplm_cna/model.10"
-output_model = "/home/xwshi/corpora/giga/nplm_cna/output_model.nnlm"
-train_ngrams = "~/corpora/giga/nplm_cna/train.ngrams"
-
-def averageNullEmbedding (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/averageNullEmbedding.py " 
-		+ " -p " + path_to_nplm + "python " 
-		+ " -i " + input_model 
-		+ " -o " + output_model
-	write_step (command1)
-	os.system (command1)
-		# + " -n 0 " \
-		# + " -t " + train_ngrams)
-
-
-def nplm (cfg_info) :
-	print "nplm"
-	averageNullEmbedding (cfg_info)
 
 ######################   bnplm #############################################
-
-
-# output_bplm_model = bplm_working + "train.10k.model.nplm.out"
-# input_bplm_model = bplm_working + "train.10k.model.nplm.40"
-# train_bplm_ngrams = bplm_working + "cht.train.clean.ngrams"
-
 def extract_training (cfg_info) :
 	command1 = cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/extract_training.py "
 		+ " --working-dir " + easy_blm
 		+ " --corpus " + easy_corpus + cfg_info.filename + ".clean " 
-		+ " --source-language " + cfg_info.source_id  #+ cfg_info.training_path + "../" + cfg_info.filename + ".true." + cfg_info.source_id \
-		+ " --target-language " + cfg_info.target_id # + cfg_info.training_path + "../" + cfg_info.filename + ".true." + cfg_info.target_id \
+		+ " --source-language " + cfg_info.source_id  
+		+ " --target-language " + cfg_info.target_id 
 		+ " --align " + easy_train + "/model/aligned.grow-diag-final-and " 
 		+ " --prune-target-vocab 20000 " 
 		+ " --prune-source-vocab 20000 " 
 		+ " --target-context 4 " 
 		+ " --source-context 3 "
 	write_step (command1)
-	#os.system (cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/extract_training.py " 
 	os.system (command1)
 
 def train_nplm (cfg_info) : 
@@ -451,17 +421,13 @@ def view_result (cfg_info) :
 			break
 		count += 1
 
-
 def testing (cfg_info) :
-	print "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	#t_start (cfg_info)
-	print "******************************************************************"
 	t_tokenisation (cfg_info)
 	t_truecasing (cfg_info)
 	#t_filter_model_given_input (cfg_info)
 	run_test (cfg_info)
 	view_result (cfg_info)
-
 #########################  test  ###########################
 
 
@@ -471,8 +437,8 @@ def prepare_corpus (cfg_info) :
 	command1 = cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.target_id 
 		+ " -threads " + cfg_info.threads
 		+ " -no-escape 1 "
-		+ " < " + cfg_info.training_corpus_path + cfg_info.filename + "." + cfg_info.target_id + " > "
-		+ " " + easy_nplm + cfg_info.filename + ".tok." + cfg_info.target_id
+		+ " < " + cfg_info.training_corpus_path + cfg_info.filename + "." + cfg_info.target_id 
+		+ " > " + easy_nplm + cfg_info.filename + ".tok." + cfg_info.target_id
 	command2 = cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
 		+ " " + easy_truecaser + "truecase-model." + cfg_info.target_id 
 		+ " < " + easy_nplm + cfg_info.filename + ".tok." + cfg_info.target_id 
@@ -513,21 +479,20 @@ def train_neural_network (cfg_info) :
 	os.system (command1)
 
 def nplm (cfg_info) :
-	# prepare_corpus (cfg_info)
-	# prepare_neural_language_model (cfg_info)
+	prepare_corpus (cfg_info)
+	prepare_neural_language_model (cfg_info)
 	train_neural_network (cfg_info)
 
 
 def easymoses ():
-	# cfg_info = ConfigInfo.ConfigInfo("moses.conf")
 	preparation (cfg_info)
 	# corpus_preparation (cfg_info)
 	# language_model_training (cfg_info)
 	# training_translation_system (cfg_info)
 	# tuning (cfg_info)
 	testing (cfg_info)
+
 	# nplm (cfg_info)
-	
 	# bnplm (cfg_info)
 
 
