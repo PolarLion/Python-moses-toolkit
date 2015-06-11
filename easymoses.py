@@ -25,7 +25,7 @@ class CfgInfo :
 
 cfg_info = CfgInfo()
 
-easy_experiment_id = 4
+easy_experiment_id = 0
 easy_corpus = ""
 easy_truecaser = ""
 easy_logs = "" 
@@ -100,30 +100,29 @@ def preparation (cfg_info) :
 	outfile.write (str (time.strftime('%Y-%m-%d %A %X %Z',time.localtime(time.time())) ))
 	outfile.close ()
 
-	if not os.path.exists (easy_steps + str (easy_experiment_id) + ".step", 'w'):
+	if not os.path.exists (easy_steps + str (easy_experiment_id) + ".step"):
 		outfile = open (easy_steps + str (easy_experiment_id) + ".step", 'w')
-		outfile.write (str (time.strftime('%Y-%m-%d %A %X %Z',time.localtime(time.time())) ))
+		outfile.write (str (time.strftime('%Y-%m-%d %A %X %Z',time.localtime(time.time())) ) + "\n\n")
 		outfile.close ()
 
 def write_step (command) :
 	outfile = open (easy_steps + str (easy_experiment_id) + ".step", 'a')
-	outfile.write (str (time.strftime('%Y-%m-%d %A %X %Z',time.localtime(time.time())) ))
-	outfile.write (command)
+	outfile.write (str (time.strftime('%Y-%m-%d %A %X %Z',time.localtime(time.time())) ) + "\n")
+	outfile.write (command + "\n")
 	outfile.close ()
 
 ######################### corpus preparation  ###########################
 def tokenisation (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.source_id 
-		+ " -threads " + cfg_info.threads
+	command1 = (cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.source_id 
+		+ " -threads " + cfg_info.threads 
 		+ " -no-escape 1 "
 		+ " < " + cfg_info.training_corpus_path + cfg_info.filename + "." + cfg_info.source_id + " > "
-		+ " " + easy_corpus + cfg_info.filename + ".tok." + cfg_info.source_id
-		+ " -no-escape "
-	command2 = cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.target_id 
+		+ " " + easy_corpus + cfg_info.filename + ".tok." + cfg_info.source_id )
+	command2 = (cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.target_id 
 		+ " -threads " + cfg_info.threads
 		+ " -no-escape 1 "
 		+ " < " + cfg_info.training_corpus_path + cfg_info.filename + "." + cfg_info.target_id + " > "
-		+ " " + easy_corpus + cfg_info.filename + ".tok." + cfg_info.target_id
+		+ " " + easy_corpus + cfg_info.filename + ".tok." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)
 	write_step (command2)
@@ -132,72 +131,72 @@ def tokenisation (cfg_info) :
 
 
 def truecaser (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/recaser/train-truecaser.perl --model " 
+	command1 = (cfg_info.mosesdecoder_path + "scripts/recaser/train-truecaser.perl --model " 
  		+ " " + easy_truecaser + "truecase-model." + cfg_info.source_id + " --corpus " 
-		+ " " + easy_corpus + cfg_info.filename + ".tok." + cfg_info.source_id
-	command2 = cfg_info.mosesdecoder_path + "scripts/recaser/train-truecaser.perl --model " 
+		+ " " + easy_corpus + cfg_info.filename + ".tok." + cfg_info.source_id)
+	command2 = (cfg_info.mosesdecoder_path + "scripts/recaser/train-truecaser.perl --model " 
  		+ " " + easy_truecaser + "truecase-model." + cfg_info.target_id + " --corpus " 
-		+ " " + easy_corpus + cfg_info.filename + ".tok." + cfg_info.target_id
+		+ " " + easy_corpus + cfg_info.filename + ".tok." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)		
 	write_step (command2)
 	os.system (command2)		
 
 def truecasing (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
+	command1 = (cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
 		+ " " + easy_truecaser + "truecase-model." + cfg_info.source_id 
 		+ " < " + easy_corpus + cfg_info.filename + ".tok." + cfg_info.source_id 
-		+ " > " + easy_corpus + cfg_info.filename + ".true." + cfg_info.source_id
-	command2 = cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
+		+ " > " + easy_corpus + cfg_info.filename + ".true." + cfg_info.source_id)
+	command2 = (cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
 		+ " " + easy_truecaser + "truecase-model." + cfg_info.target_id 
 		+ " < " + easy_corpus + cfg_info.filename + ".tok." + cfg_info.target_id 
-		+ " > " + easy_corpus + cfg_info.filename + ".true." + cfg_info.target_id
+		+ " > " + easy_corpus + cfg_info.filename + ".true." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)
 	write_step (command2)
 	os.system (command2)
 
 def limiting_sentence_length (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/training/clean-corpus-n.perl " 
-		+ " " + easy_corpus + cfg_info.filename + ".true " + cfg_info.source_id + " " + cfg_info.target_id + " " 
-		+ " " + easy_corpus + cfg_info.filename + ".clean  1 " + cfg_info.sentence_length
+	command1 = (cfg_info.mosesdecoder_path + "scripts/training/clean-corpus-n.perl " 
+		+ " " + easy_corpus + cfg_info.filename + ".true " + cfg_info.source_id + " " + cfg_info.target_id
+		+ " " + easy_corpus + cfg_info.filename + ".clean  1 " + cfg_info.sentence_length)
 	write_step (command1)
 	os.system (command1)
 ######################### corpus preparation  ###########################
 
 #########################  language model traning #######################
 def generate_sb (cfg_info) :
-	command1 = cfg_info.irstlm_path + "bin/add-start-end.sh < " 
-		+ " " + easy_corpus + cfg_info.filename + ".true." + cfg_info.target_id + " > "
-		+ " " + easy_lm + cfg_info.filename + ".sb." + cfg_info.target_id
+	command1 = (cfg_info.irstlm_path + "bin/add-start-end.sh < " 
+		+ " " + easy_corpus + cfg_info.filename + ".true." + cfg_info.target_id 
+		+ " > " + easy_lm + cfg_info.filename + ".sb." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)
 
 def generate_lm (cfg_info) :
-	command1 = "export IRSTLM=" + cfg_info.irstlm_path + "; " + cfg_info.irstlm_path + "bin/build-lm.sh " 
-		+ " -i " + easy_lm + cfg_info.filename + ".sb." + cfg_info.target_id + " -t ./tmp -p -s " 
-		+ " improved-kneser-ney -o " + easy_lm + cfg_info.filename + ".lm." + cfg_info.target_id
+	command1 = ("export IRSTLM=" + cfg_info.irstlm_path + "; " + cfg_info.irstlm_path + "bin/build-lm.sh " 
+		+ " -i " + easy_lm + cfg_info.filename + ".sb." + cfg_info.target_id 
+		+ " -t ./tmp -p -s improved-kneser-ney -o " + easy_lm + cfg_info.filename + ".lm." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)
 
 def generate_arpa (cfg_info) :
-	command1 = cfg_info.irstlm_path + "bin/compile-lm --text=yes " 
+	command1 = (cfg_info.irstlm_path + "bin/compile-lm --text=yes " 
 		+ " " + easy_lm + cfg_info.filename + ".lm." + cfg_info.target_id + ".gz " 
-		+ " " + easy_lm + cfg_info.filename + ".arpa." + cfg_info.target_id
+		+ " " + easy_lm + cfg_info.filename + ".arpa." + cfg_info.target_id)
 	write_step (command1)
-	os.system ()
+	os.system (command1)
 
 def generate_blm (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "bin/build_binary " 
-		+ " " + easy_lm + cfg_info.filename + ".arpa." + cfg_info.target_id + " " 
-		+ " " + easy_lm + cfg_info.filename + ".blm." + cfg_info.target_id
+	command1 = (cfg_info.mosesdecoder_path + "bin/build_binary " 
+		+ " " + easy_lm + cfg_info.filename + ".arpa." + cfg_info.target_id 
+		+ " " + easy_lm + cfg_info.filename + ".blm." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)
 #########################  language model traning #######################
 
 #########################  training ranslation system ###########################################
 def training_translation_system (cfg_info) :
-	command1 = "nohup nice " + cfg_info.mosesdecoder_path + "scripts/training/train-model.perl " 
+	command1 = ("nohup nice " + cfg_info.mosesdecoder_path + "scripts/training/train-model.perl " 
 		+ " -mgiza -mgiza-cpus 16 -cores 2 "
 		+ " -root-dir " + easy_train 
 		+ " -corpus " + " " + easy_corpus + cfg_info.filename + ".clean " 
@@ -206,48 +205,48 @@ def training_translation_system (cfg_info) :
 		+ " -reordering msd-bidirectional-fe -lm 0:3:" + easy_lm + cfg_info.filename + ".blm." + cfg_info.target_id + ":8 " 
 		# + " -reordering msd-bidirectional-fe -lm 0:4:" + "" + ":8 " 
 		+ " -external-bin-dir " + cfg_info.giza_path + "bin " 
-		+ " >& " + easy_working + "training.out &"
+		+ " >& " + easy_working + "training.out &")
 	write_step (command1)
 	os.system (command1)
 
 def tuning_tokenizer (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.source_id 
+	command1 = (cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.source_id 
 		+ " -threads " + cfg_info.threads
 		+ " -no-escape 1 "
 		+ " < " + cfg_info.training_corpus_path + cfg_info.devfilename + "." + cfg_info.source_id 
-		+ " > " + easy_tuning + cfg_info.devfilename + ".tok." + cfg_info.source_id
-	command2 = cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.target_id
+		+ " > " + easy_tuning + cfg_info.devfilename + ".tok." + cfg_info.source_id)
+	command2 = (cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.target_id
 		+ " -threads " + cfg_info.threads
 		+ " -no-escape 1 "
 		+ " < " + cfg_info.training_corpus_path + cfg_info.devfilename + "." + cfg_info.target_id 
-		+ " > " + easy_tuning + cfg_info.devfilename + ".tok." + cfg_info.target_id
+		+ " > " + easy_tuning + cfg_info.devfilename + ".tok." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)
 	write_step (command2)
 	os.system (command2)
 
 def tuning_truecase (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
+	command1 = (cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
 		+ " " + easy_truecaser + "truecase-model." + cfg_info.source_id 
 		+ " < " + easy_tuning + cfg_info.devfilename + ".tok." + cfg_info.source_id 
-		+ " > " + easy_tuning + cfg_info.devfilename + ".true." + cfg_info.source_id
-	command2 = cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
+		+ " > " + easy_tuning + cfg_info.devfilename + ".true." + cfg_info.source_id)
+	command2 = (cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
 		+ " " + easy_truecaser + "truecase-model." + cfg_info.target_id 
 		+ " < " + easy_tuning + cfg_info.devfilename + ".tok." + cfg_info.target_id 
-		+ " > " + easy_tuning + cfg_info.devfilename + ".true." + cfg_info.target_id
+		+ " > " + easy_tuning + cfg_info.devfilename + ".true." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)
 	write_step (command2)
 	os.system (command2)
 
 def tuning_process (cfg_info) :
-	command1 = "nohup nice " + cfg_info.mosesdecoder_path + "scripts/training/mert-moses.pl " 
+	command1 = ("nohup nice " + cfg_info.mosesdecoder_path + "scripts/training/mert-moses.pl " 
 	 	+ " -threads " + cfg_info.threads
 		+ " -working-dir " + easy_tuning 
 		+ " " + easy_tuning + cfg_info.devfilename + ".true." + cfg_info.source_id 
 		+ " " + easy_tuning + cfg_info.devfilename + ".true." + cfg_info.target_id 
 		+ " " + cfg_info.mosesdecoder_path + "bin/moses " + easy_train + "model/moses.ini " 
-		+ " --mertdir " + cfg_info.mosesdecoder_path + "bin/ &> " + easy_tuning + "mert.out &"
+		+ " --mertdir " + cfg_info.mosesdecoder_path + "bin/ &> " + easy_tuning + "mert.out &")
 	write_step (command1)
 	os.system (command1)
 
@@ -278,7 +277,7 @@ def language_model_training (cfg_info) :
 
 ######################   bnplm #############################################
 def extract_training (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/extract_training.py "
+	command1 = (cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/extract_training.py "
 		+ " --working-dir " + easy_blm
 		+ " --corpus " + easy_corpus + cfg_info.filename + ".clean " 
 		+ " --source-language " + cfg_info.source_id  
@@ -286,18 +285,18 @@ def extract_training (cfg_info) :
 		+ " --align " + easy_train + "/model/aligned.grow-diag-final-and " 
 		+ " --prune-target-vocab 20000 " 
 		+ " --prune-source-vocab 20000 " 
-		+ " --target-context 4 " 
-		+ " --source-context 3 "
+		+ " --target-context 5 " 
+		+ " --source-context 4 ")
 	write_step (command1)
 	os.system (command1)
 
 def train_nplm (cfg_info) : 
-	command1 = cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/train_nplm.py "
+	command1 = (cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/train_nplm.py "
  		+ " --working-dir " + easy_blm 
 		+ " --corpus " + easy_corpus + cfg_info.filename + ".clean " 
 		+ " --nplm-home " + cfg_info.nplm_path 
-		+ " --ngram-size 11 " 
-		+ " --epochs 30 " 
+		+ " --ngram-size 14 " 
+		+ " --epochs 40 " 
 		+ " --learning-rate 0.7 "
 		# + " --input_vocab_size 20000 " 
 		# + " --output_vocab_size 20000 " 
@@ -305,16 +304,16 @@ def train_nplm (cfg_info) :
 		+ " --input-embedding 150 "
 		+ " --output-embedding 150 " 
 		+ " --threads " + cfg_info.threads
-		+ " &> nplm.out &"
+		+ " &> nplm.out &")
 	write_step (command1)
 	os.system (command1)
 
 def averagebNullEmbedding (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/averageNullEmbedding.py " 
+	command1 = (cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/averageNullEmbedding.py " 
 		+ " -p " + path_to_nplm + "python " 
 		+ " -i " + input_bplm_model 
 		+ " -o " + output_bplm_model 
-		+ " -t " + train_bplm_ngrams
+		+ " -t " + train_bplm_ngrams)
 	write_step (command1)
 	os.system (command1)
 
@@ -322,7 +321,6 @@ def bnplm (cfg_info) :
 	extract_training (cfg_info)
 	train_nplm (cfg_info)
 	# averagebNullEmbedding (cfg_info)
-
 
 ####################### testing #############################################
 # def t_start (cfg_info) :
@@ -345,56 +343,56 @@ def bnplm (cfg_info) :
 # 	os.system (command3)
 
 def t_tokenisation (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.source_id 
+	command1 = (cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.source_id 
 		+ " -threads " + cfg_info.threads
 		+ " -no-escape 1 "
 		+ " < " + cfg_info.test_corpus_path + cfg_info.testfilename + "." + cfg_info.source_id 
-		+ " > " + easy_evaluation + cfg_info.testfilename + ".tok." + cfg_info.source_id
-	command2 = cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.target_id 
+		+ " > " + easy_evaluation + cfg_info.testfilename + ".tok." + cfg_info.source_id)
+	command2 = (cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.target_id 
 		+ " -threads " + cfg_info.threads
 		+ " -no-escape 1 "
 		+ " < " + cfg_info.test_corpus_path + cfg_info.testfilename + "." + cfg_info.target_id 
-		+ " > " + easy_evaluation + cfg_info.testfilename + ".tok." + cfg_info.target_id
+		+ " > " + easy_evaluation + cfg_info.testfilename + ".tok." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)
 	write_step (command2)
 	os.system (command2)
 	
 def t_truecasing (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
+	command1 = (cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
 	 	+ " " + easy_truecaser + "truecase-model." + cfg_info.source_id 
 		+ " < " + easy_evaluation + cfg_info.testfilename  + ".tok." + cfg_info.source_id 
-		+ " > " + easy_evaluation + cfg_info.testfilename  + ".true." + cfg_info.source_id
-	command2 = cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
+		+ " > " + easy_evaluation + cfg_info.testfilename  + ".true." + cfg_info.source_id)
+	command2 = (cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
 	 	+ " " + easy_truecaser + "truecase-model." + cfg_info.target_id 
 		+ " < " + easy_evaluation + cfg_info.testfilename  + ".tok." + cfg_info.target_id 
-		+ " > " + easy_evaluation + cfg_info.testfilename  + ".true." + cfg_info.target_id
+		+ " > " + easy_evaluation + cfg_info.testfilename  + ".true." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)
 	write_step (command2)
 	os.system (command2)
  
 def t_filter_model_given_input (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/training/filter-model-given-input.pl " 
+	command1 = (cfg_info.mosesdecoder_path + "scripts/training/filter-model-given-input.pl " 
 		+ " " + easy_evaluation + "filtered-" + cfg_info.testfilename 
 		+ " " + cfg_info.working_path + "moses.ini " 
 		+ " " + test_corpus_path + test_filename + ".true." + cfg_info.source_id 
-		+ " -Binarizer " + cfg_info.mosesdecoder_path + "bin/processPhraseTableMin"
+		+ " -Binarizer " + cfg_info.mosesdecoder_path + "bin/processPhraseTableMin")
 	write_step (command1)
 	os.system (command1)
 
 def run_test (cfg_info) :
-	command1 = "nohup nice " + cfg_info.mosesdecoder_path + "bin/moses "
+	command1 = ("nohup nice " + cfg_info.mosesdecoder_path + "bin/moses "
 		+ " -threads " + cfg_info.threads
 		+ " -f " + easy_tuning + "moses.ini " 
 		#+ cfg_info.working_path + "filtered-" + test_filename + "/moses.ini " \
 		#+ " -i " + cfg_info.working_path + "filtered-" + test_filename + "/input.115575 " \
 		+ " < " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.source_id 
 		+ " > " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id 
-		+ " 2> " + easy_evaluation + cfg_info.testfilename + ".out "
-	command2 = cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl " 
+		+ " 2> " + easy_evaluation + cfg_info.testfilename + ".out ")
+	command2 = (cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl " 
 		+ " -lc " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.target_id 
-		+ " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id
+		+ " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)
 	write_step (command2)
@@ -411,9 +409,9 @@ def view_result (cfg_info) :
 		if source_line : translation_result.write ("[#" + str(count) + "] " + source_line)
 		else : 
 			print "eeeeeeeeeerror  " + str (count)
-			break
-		translation_result.write ("[" + str(count) + "] " + tran_line)
+			break	
 		target_line = target.readline ()
+		translation_result.write ("[" + str(easybleu.bleu (tran_line, target_line)) + "] " + tran_line)
 		if target_line : 
 			translation_result.write ("[ref] " + target_line) 
 		else :
@@ -422,11 +420,11 @@ def view_result (cfg_info) :
 		count += 1
 
 def testing (cfg_info) :
-	#t_start (cfg_info)
-	t_tokenisation (cfg_info)
-	t_truecasing (cfg_info)
+	# t_start (cfg_info)
+	# t_tokenisation (cfg_info)
+	# t_truecasing (cfg_info)
 	#t_filter_model_given_input (cfg_info)
-	run_test (cfg_info)
+	# run_test (cfg_info)
 	view_result (cfg_info)
 #########################  test  ###########################
 
@@ -434,15 +432,15 @@ def testing (cfg_info) :
 
 ######################### Training NPLM #############################
 def prepare_corpus (cfg_info) :
-	command1 = cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.target_id 
+	command1 = (cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.target_id 
 		+ " -threads " + cfg_info.threads
 		+ " -no-escape 1 "
 		+ " < " + cfg_info.training_corpus_path + cfg_info.filename + "." + cfg_info.target_id 
-		+ " > " + easy_nplm + cfg_info.filename + ".tok." + cfg_info.target_id
-	command2 = cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
+		+ " > " + easy_nplm + cfg_info.filename + ".tok." + cfg_info.target_id)
+	command2 = (cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
 		+ " " + easy_truecaser + "truecase-model." + cfg_info.target_id 
 		+ " < " + easy_nplm + cfg_info.filename + ".tok." + cfg_info.target_id 
-		+ " > " + easy_nplm + cfg_info.filename + ".true." + cfg_info.target_id
+		+ " > " + easy_nplm + cfg_info.filename + ".true." + cfg_info.target_id)
 	write_step (command1)
 	os.system (command1)
 	write_step (command2)
@@ -450,7 +448,7 @@ def prepare_corpus (cfg_info) :
 
 
 def prepare_neural_language_model (cfg_info) :
-	command1 = cfg_info.nplm_path + "bin/prepareNeuralLM " 
+	command1 = (cfg_info.nplm_path + "bin/prepareNeuralLM " 
 		+ " --train_text " + easy_nplm + cfg_info.filename  + ".true." + cfg_info.target_id
 		+ " --ngram_size 3 " 
 		+ " --vocab_size 20000 "  
@@ -458,13 +456,13 @@ def prepare_neural_language_model (cfg_info) :
 		+ " --train_file " + easy_nplm + "train.ngrams " 
 		+ " --validation_size 500 "
 		+ " --validation_file " + easy_nplm + "validation.ngrams " 
-		+ " >& " + easy_nplm + "prepareout.out &"
+		+ " >& " + easy_nplm + "prepareout.out &")
 	write_step (command1)
 	os.system (command1)
 
 
 def train_neural_network (cfg_info) :
-	command1 = cfg_info.nplm_path + "bin/trainNeuralNetwork " 
+	command1 = (cfg_info.nplm_path + "bin/trainNeuralNetwork " 
 		+ " --train_file " + easy_nplm + "train.ngrams " 
 		+ " --validation_file " + easy_nplm + "validation.ngrams " 
 		+ " --num_epochs 20 "
@@ -474,7 +472,7 @@ def train_neural_network (cfg_info) :
 		+ " --num_hidden 0" 
 		+ " --output_embedding_dimension 750 "
  		+ " --num_threads "+ cfg_info.threads 
-		+ " >& " + easy_nplm + "nplmtrain.out &"
+		+ " >& " + easy_nplm + "nplmtrain.out &")
 	write_step (command1)
 	os.system (command1)
 
