@@ -47,6 +47,7 @@ def bleu_n (translated, reference, n) :
     r = reference.lower ().rstrip ().split (" ")
     b = {}
     bleu = 1.0
+    if len (r) <= n : n -= 1
     for i in range (0, n) :
         if i + 1 > len (t) : 
             # print "$$$$$$$$$$$$$$$$$$$$$$"
