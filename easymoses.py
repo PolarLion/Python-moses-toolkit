@@ -25,7 +25,7 @@ class CfgInfo :
 
 cfg_info = CfgInfo()
 
-easy_experiment_id = 0
+easy_experiment_id = 1
 easy_corpus = ""
 easy_truecaser = ""
 easy_logs = "" 
@@ -419,6 +419,58 @@ def view_result (cfg_info) :
 			break
 		count += 1
 
+
+def compare_resultt (cfg_info, exp_id):
+	result1 = open (easy_evaluation + "translation_result.txt", 'r')
+	result2 = open (cfg_info.workspace + "evaluation/" + str (exp_id) + "/translation_result.txt", 'r')
+	result_set = {}
+	pattern = re.compile (r'\[\d.(\d+)\]')
+	count = 0
+	while result1:
+	    count += 1
+	    l1 = result1.readline ()
+	    if l1 == "": break
+	    #print "xx ", l1
+	    l2 = result2.readline ()
+	    #print "xxx ", l2
+	    item = []
+	    item.append (l1)
+	    l1 = result1.readline ()
+	    l2 = result2.readline ()
+	    match1 = pattern.match (l1)
+	    item.append (l1)
+	    match2 = pattern.match (l2)
+	    item.append (l2)
+	    score1 = -1.0
+	    score2 = -1.0
+	    if match1 and match2:
+	        score1 = float (match1.group ().strip (r'\[?\]?'))
+	        score2 = float (match2.group ().strip (r'\[?\]?'))
+	    #else :
+	        #print "error error error"
+	    l1 = result1.readline ()
+	    l2 = result2.readline ()
+	    item.append (l1)
+	    key = score1 - score2
+	    if key in result_set :
+	        result_set [key].append (item)
+	    else :
+	        result_set [key] = []
+	        result_set [key].append (item)
+	    #if count > 0 : break
+	print count
+	result1.close ()
+	result2.close ()
+	compare = open (easy_evaluation + "compare_to_" + str(exp_id) + ".txt", 'w')
+
+	for lst in sorted (result_set.iteritems (), key=lambda d:d[0] , reverse = True):
+	    #print type (lst), lst[1]
+	    for lstlst in lst[1]:
+	        for line in lstlst :
+	            compare.write (line)
+	compare.close ()
+
+
 def testing (cfg_info) :
 	# t_start (cfg_info)
 	# t_tokenisation (cfg_info)
@@ -426,6 +478,7 @@ def testing (cfg_info) :
 	#t_filter_model_given_input (cfg_info)
 	# run_test (cfg_info)
 	view_result (cfg_info)
+	compare_resultt (cfg_info, 0)
 #########################  test  ###########################
 
 
@@ -489,6 +542,7 @@ def easymoses ():
 	# training_translation_system (cfg_info)
 	# tuning (cfg_info)
 	testing (cfg_info)
+
 
 	# nplm (cfg_info)
 	# bnplm (cfg_info)
