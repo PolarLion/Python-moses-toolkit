@@ -1,31 +1,18 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-  
+
 import sys
 import os
 import re
 import time
 import easybleu
+import easyconfig
 
 
-class CfgInfo :
-	mosesdecoder_path = "/opt/translation/moses/"
-	irstlm_path = "/opt/translation/irstlm/"
-	giza_path = "/opt/translation/mgizapp/"
 
-	training_corpus_path = "/home/share/data/BOLT_Phase/Tokenized/Train/"
-	test_corpus_path = "/home/share/data/BOLT_Phase/Tokenized/Test/"
-	nplm_path = "/opt/translation/nplm/"
-	devfilename = "CHT.Dev"
-	filename = "CHT.Train"
-	testfilename = "CHT.Test"
-	target_id = "en"
-	source_id = "zh"
-	workspace = "/home/xwshi/easymoses_workspace/"
-	threads = "32"
-	sentence_length = "80"
+cfg_info = easyconfig.CfgInfo()
 
-
-cfg_info = CfgInfo()
-
-easy_experiment_id = 1
+easy_experiment_id = 4
 easy_corpus = ""
 easy_truecaser = ""
 easy_logs = "" 
@@ -127,8 +114,6 @@ def tokenisation (cfg_info) :
 	os.system (command1)
 	write_step (command2)
 	os.system (command2)
-
-
 
 def truecaser (cfg_info) :
 	command1 = (cfg_info.mosesdecoder_path + "scripts/recaser/train-truecaser.perl --model " 
@@ -273,8 +258,6 @@ def language_model_training (cfg_info) :
 	generate_arpa (cfg_info)
 	generate_blm (cfg_info)
 
-
-
 ######################   bnplm #############################################
 def extract_training (cfg_info) :
 	command1 = (cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/extract_training.py "
@@ -310,16 +293,16 @@ def train_nplm (cfg_info) :
 
 def averagebNullEmbedding (cfg_info) :
 	command1 = (cfg_info.mosesdecoder_path + "scripts/training/bilingual-lm/averageNullEmbedding.py " 
-		+ " -p " + path_to_nplm + "python " 
-		+ " -i " + input_bplm_model 
-		+ " -o " + output_bplm_model 
-		+ " -t " + train_bplm_ngrams)
+		+ " -p " + cfg_info.nplm_path + "python " 
+		+ " -i " + easy_blm + "train.10k.model.nplm.40 "
+		+ " -o " + easy_blm + "blm.blm " 
+		+ " -t " + easy_blm + "CHT.Train.clean.ngrams ")
 	write_step (command1)
 	os.system (command1)
 
 def bnplm (cfg_info) :
 	extract_training (cfg_info)
-	train_nplm (cfg_info)
+	# train_nplm (cfg_info)
 	# averagebNullEmbedding (cfg_info)
 
 ####################### testing #############################################
@@ -384,7 +367,7 @@ def t_filter_model_given_input (cfg_info) :
 def run_test (cfg_info) :
 	command1 = ("nohup nice " + cfg_info.mosesdecoder_path + "bin/moses "
 		+ " -threads " + cfg_info.threads
-		+ " -f " + easy_tuning + "moses.ini " 
+		+ " -f " + easy_tuning + "moses.ini"#"moses.ini " 
 		#+ cfg_info.working_path + "filtered-" + test_filename + "/moses.ini " \
 		#+ " -i " + cfg_info.working_path + "filtered-" + test_filename + "/input.115575 " \
 		+ " < " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.source_id 
@@ -418,7 +401,6 @@ def view_result (cfg_info) :
 			print "errrrrrrrrrrror" + str (count)
 			break
 		count += 1
-
 
 def compare_resultt (cfg_info, exp_id):
 	result1 = open (easy_evaluation + "translation_result.txt", 'r')
@@ -470,18 +452,15 @@ def compare_resultt (cfg_info, exp_id):
 	            compare.write (line)
 	compare.close ()
 
-
 def testing (cfg_info) :
 	# t_start (cfg_info)
-	# t_tokenisation (cfg_info)
-	# t_truecasing (cfg_info)
+	t_tokenisation (cfg_info)
+	t_truecasing (cfg_info)
 	#t_filter_model_given_input (cfg_info)
-	# run_test (cfg_info)
+	run_test (cfg_info)
 	view_result (cfg_info)
 	compare_resultt (cfg_info, 0)
 #########################  test  ###########################
-
-
 
 ######################### Training NPLM #############################
 def prepare_corpus (cfg_info) :
