@@ -12,7 +12,7 @@ import easyconfig
 
 cfg_info = easyconfig.CfgInfo()
 
-easy_experiment_id = 4
+easy_experiment_id = 6
 easy_corpus = ""
 easy_truecaser = ""
 easy_logs = "" 
@@ -269,7 +269,7 @@ def extract_training (cfg_info) :
 		+ " --prune-target-vocab 20000 " 
 		+ " --prune-source-vocab 20000 " 
 		+ " --target-context 5 " 
-		+ " --source-context 4 ")
+		+ " --source-context 2 ")
 	write_step (command1)
 	os.system (command1)
 
@@ -278,7 +278,7 @@ def train_nplm (cfg_info) :
  		+ " --working-dir " + easy_blm 
 		+ " --corpus " + easy_corpus + cfg_info.filename + ".clean " 
 		+ " --nplm-home " + cfg_info.nplm_path 
-		+ " --ngram-size 14 " 
+		+ " --ngram-size 10 " 
 		+ " --epochs 40 " 
 		+ " --learning-rate 0.7 "
 		# + " --input_vocab_size 20000 " 
@@ -301,9 +301,9 @@ def averagebNullEmbedding (cfg_info) :
 	os.system (command1)
 
 def bnplm (cfg_info) :
-	extract_training (cfg_info)
+	# extract_training (cfg_info)
 	# train_nplm (cfg_info)
-	# averagebNullEmbedding (cfg_info)
+	averagebNullEmbedding (cfg_info)
 
 ####################### testing #############################################
 # def t_start (cfg_info) :
@@ -367,7 +367,8 @@ def t_filter_model_given_input (cfg_info) :
 def run_test (cfg_info) :
 	command1 = ("nohup nice " + cfg_info.mosesdecoder_path + "bin/moses "
 		+ " -threads " + cfg_info.threads
-		+ " -f " + easy_tuning + "moses.ini"#"moses.ini " 
+		+ " -f " + easy_tuning + "moses.ini "
+		# + " -f " + easy_tuning + "run6.moses.ini"#"moses.ini " 
 		#+ cfg_info.working_path + "filtered-" + test_filename + "/moses.ini " \
 		#+ " -i " + cfg_info.working_path + "filtered-" + test_filename + "/input.115575 " \
 		+ " < " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.source_id 
@@ -439,17 +440,32 @@ def compare_resultt (cfg_info, exp_id):
 	    else :
 	        result_set [key] = []
 	        result_set [key].append (item)
-	    #if count > 0 : break
+	    # if count > 0 : break
 	print count
 	result1.close ()
 	result2.close ()
 	compare = open (easy_evaluation + "compare_to_" + str(exp_id) + ".txt", 'w')
-
+	better_count = 0
+	worse_count = 0
+	equal_count = 0
+	total = 0
 	for lst in sorted (result_set.iteritems (), key=lambda d:d[0] , reverse = True):
-	    #print type (lst), lst[1]
+	    # print type (lst), lst
 	    for lstlst in lst[1]:
+	    	if 0 < lst [0] : 
+	    		better_count += 1
+	    	elif 0 > lst[0] : 
+	    		worse_count += 1
+	    	else :
+	    		equal_count += 1
+	    	total += 1
 	        for line in lstlst :
 	            compare.write (line)
+	compare.write ("better : " + str (better_count))
+	compare.write ("  worese : " + str (worse_count))
+	compare.write ("  same : " + str (equal_count))
+	compare.write ("  total : " + str (total))
+	print better_count, worse_count, equal_count, total
 	compare.close ()
 
 def testing (cfg_info) :
@@ -482,7 +498,7 @@ def prepare_corpus (cfg_info) :
 def prepare_neural_language_model (cfg_info) :
 	command1 = (cfg_info.nplm_path + "bin/prepareNeuralLM " 
 		+ " --train_text " + easy_nplm + cfg_info.filename  + ".true." + cfg_info.target_id
-		+ " --ngram_size 3 " 
+		+ " --ngram_size 5 " 
 		+ " --vocab_size 20000 "  
 		+ " --write_words_file " + easy_nplm + "words " 
 		+ " --train_file " + easy_nplm + "train.ngrams " 
@@ -497,7 +513,7 @@ def train_neural_network (cfg_info) :
 	command1 = (cfg_info.nplm_path + "bin/trainNeuralNetwork " 
 		+ " --train_file " + easy_nplm + "train.ngrams " 
 		+ " --validation_file " + easy_nplm + "validation.ngrams " 
-		+ " --num_epochs 20 "
+		+ " --num_epochs 30 "
 		+ " --input_words_file " + easy_nplm + "words " 
 		+ " --model_prefix " + easy_nplm + "model " 
 		+ " --input_embedding_dimension 150 "  
@@ -509,8 +525,8 @@ def train_neural_network (cfg_info) :
 	os.system (command1)
 
 def nplm (cfg_info) :
-	prepare_corpus (cfg_info)
-	prepare_neural_language_model (cfg_info)
+	# prepare_corpus (cfg_info)
+	# prepare_neural_language_model (cfg_info)
 	train_neural_network (cfg_info)
 
 
@@ -521,7 +537,6 @@ def easymoses ():
 	# training_translation_system (cfg_info)
 	# tuning (cfg_info)
 	testing (cfg_info)
-
 
 	# nplm (cfg_info)
 	# bnplm (cfg_info)
