@@ -14,7 +14,7 @@ sys.setdefaultencoding('utf8')
 
 cfg_info = easyconfig.CfgInfo()
 
-easy_experiment_id = 15
+easy_experiment_id = 16
 easy_corpus = ""
 easy_truecaser = ""
 easy_logs = "" 
@@ -25,6 +25,7 @@ easy_tuning = ""
 easy_evaluation = ""
 easy_blm = ""
 easy_nplm = ""
+easy_nmt = ""
 easy_steps = ""
 
 def read_state (cfg_info) :
@@ -84,6 +85,8 @@ def preparation (cfg_info) :
   if not os.path.exists (easy_blm) : os.system ("mkdir " + easy_blm)
   easy_nplm = cfg_info.workspace + "nplm/" + str (easy_experiment_id) + "/"
   if not os.path.exists (easy_nplm) : os.system ("mkdir " + easy_nplm)
+  easy_nmt = cfg_info.workspace + "nmt/" + str(easy_experiment_id) + "/"
+  if not os.path.exists (easy_nmt) : os.system ("mkdir " + easy_nmt)
 
   outfile = open (easy_logs + str (easy_experiment_id) + ".log", 'w')
   outfile.write (str (time.strftime('%Y-%m-%d %A %X %Z',time.localtime(time.time())) ))
@@ -348,8 +351,10 @@ def t_tokenisation (cfg_info) :
 def t_truecasing (cfg_info) :
   command1 = (cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
      + " " + easy_truecaser + "truecase-model." + cfg_info.source_id 
-    + " < " + easy_evaluation + cfg_info.testfilename  + ".tok." + cfg_info.source_id 
+    + " < " + easy_evaluation + cfg_info.testfilename  + ".tok." + cfg_info.source_id
+    # + " < " + easy_evaluation + cfg_info.testfilename  + ".translated." + cfg_info.target_id
     + " > " + easy_evaluation + cfg_info.testfilename  + ".true." + cfg_info.source_id)
+    # + " > " + easy_evaluation + cfg_info.testfilename  + ".translated.true." + cfg_info.target_id)
   command2 = (cfg_info.mosesdecoder_path + "scripts/recaser/truecase.perl --model " 
      + " " + easy_truecaser + "truecase-model." + cfg_info.target_id 
     + " < " + easy_evaluation + cfg_info.testfilename  + ".tok." + cfg_info.target_id 
@@ -371,8 +376,8 @@ def t_filter_model_given_input (cfg_info) :
 def run_test (cfg_info) :
   command1 = ("nohup nice " + cfg_info.mosesdecoder_path + "bin/moses "
     + " -threads " + cfg_info.threads
-    # + " -f " + easy_tuning + "moses.ini "
-    + " -f /home/xwshi/easymoses_workspace/tuning/8/moses.ini "
+    + " -f " + easy_tuning + "moses.ini "
+    # + " -f /home/xwshi/easymoses_workspace/tuning/8/moses.ini "
     # + " -f " + easy_tuning + "run6.moses.ini"#"moses.ini " 
     #+ cfg_info.working_path + "filtered-" + test_filename + "/moses.ini " \
     #+ " -i " + cfg_info.working_path + "filtered-" + test_filename + "/input.115575 " \
@@ -380,12 +385,12 @@ def run_test (cfg_info) :
     + " > " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id 
     + " 2> " + easy_evaluation + cfg_info.testfilename + ".out ")
   command2 = (cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl " 
-    + " -lc " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.target_id 
+    + " -lc " + easy_evaluation + cfg_info.testfilename + ".tok." + cfg_info.target_id 
     + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id
     # + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id + ".new"
     )
-  write_step (command1)
-  os.system (command1)
+  # write_step (command1)
+  # os.system (command1)
   write_step (command2)
   os.system (command2)
 
@@ -477,12 +482,12 @@ def compare_resultt (cfg_info, exp_id):
 
 def testing (cfg_info) :
   # t_start (cfg_info)
-  t_tokenisation (cfg_info)
-  t_truecasing (cfg_info)
+  # t_tokenisation (cfg_info)
+  # t_truecasing (cfg_info)
   #t_filter_model_given_input (cfg_info)
   run_test (cfg_info)
   view_result (cfg_info)
-  # compare_resultt (cfg_info, 0)
+  compare_resultt (cfg_info, 11)
 #########################  test  ###########################
 
 #########################  nmt ############################
@@ -542,11 +547,24 @@ def shuff(cfg_info):
   write_step (command1)
   os.system (command1)
 
-def nmt(cfg_info):
+def nmt_prepare(cfg_info):
   pkl(cfg_info)
   invert(cfg_info)
   hdf5(cfg_info)
   shuff(cfg_info)
+
+def nmt_train(cfg_info):
+  command1 = "python " + nmt_path + "train.py "\
+    + " --proto=" + "a_prototype_state_of_choice "\
+    + " --state " + easy_nmt + "state_of_" + str(easy_experiment_id) + ".py"
+
+def nmt_test():
+  command1 = "python " + nmt_path + "sample.py"\
+    + " --beam-search "\
+    + " --state state.pkl "\
+    + " --model_path model.npz"\
+    + " --source " + easy_evaluation + cfg_info.testfilename + ".tok." + cfg_info.source_id 
+
 #########################  nmt ############################
 
 ######################### Training NPLM #############################
@@ -604,7 +622,7 @@ def easymoses ():
   # language_model_training (cfg_info)
   # training_translation_system (cfg_info)
   # tuning (cfg_info)
-  testing (cfg_info)
+  # testing (cfg_info)
 
   # nplm (cfg_info)
   # bnplm (cfg_info)
