@@ -14,7 +14,7 @@ sys.setdefaultencoding('utf8')
 
 cfg_info = easyconfig.CfgInfo()
 
-easy_experiment_id = 16
+easy_experiment_id = 17
 easy_corpus = ""
 easy_truecaser = ""
 easy_logs = "" 
@@ -60,6 +60,7 @@ def preparation (cfg_info) :
   global easy_evaluation
   global easy_blm
   global easy_nplm
+  global easy_nmt
   # read_state (cfg_info)
 
   print "experiment id: ", easy_experiment_id
@@ -389,8 +390,8 @@ def run_test (cfg_info) :
     + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id
     # + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id + ".new"
     )
-  # write_step (command1)
-  # os.system (command1)
+  write_step (command1)
+  os.system (command1)
   write_step (command2)
   os.system (command2)
 
@@ -482,8 +483,8 @@ def compare_resultt (cfg_info, exp_id):
 
 def testing (cfg_info) :
   # t_start (cfg_info)
-  # t_tokenisation (cfg_info)
-  # t_truecasing (cfg_info)
+  t_tokenisation (cfg_info)
+  t_truecasing (cfg_info)
   #t_filter_model_given_input (cfg_info)
   run_test (cfg_info)
   view_result (cfg_info)
@@ -495,15 +496,40 @@ def testing (cfg_info) :
 #after tokenized
 nmt_path = "/home/xwshi/tools/GroundHog/experiments/nmt/"
 
+def chinesetok(input, output):
+  state = 0
+  infile = open (input, 'r')
+  outfile = open (output, 'w')
+  for line in infile.readlines():
+    words = line.decode('utf-8')
+    new_line = ""
+    for word in words:
+      ch = word.encode('utf-8')
+      if (ch.isalnum() or ch == '.') and state == 0:
+        new_line += " " + ch
+        state = 1
+      elif state == 1 and (ch.isalnum() or ch == '.'):
+        new_line += ch
+      elif ch.isspace():
+        a = 0
+      elif not ch.isalnum():
+        state = 0
+        new_line += " " + ch
+    new_line = new_line.strip()
+    # print new_line
+    outfile.write(new_line+"\n")
+  infile.close()
+  outfile.close()
+
 def pkl (cfg_info):
   command1 = "python " + nmt_path + "preprocess/preprocess.py " \
-    + easy_corpus + cfg_info.filename  + ".tok." + cfg_info.source_id\
+    + easy_corpus + cfg_info.filename  + ".clean." + cfg_info.source_id\
     + " -d " + easy_corpus + "vocab." + cfg_info.source_id + ".pkl "\
     + " -v " +  " 30000"\
     + " -b " + easy_corpus + "binarized_text." + cfg_info.source_id + ".pkl"\
     + " -p " #+ easy_corpus + "*en.txt.gz"
   command2 = "python " + nmt_path + "preprocess/preprocess.py " \
-    + easy_corpus + cfg_info.filename  + ".tok." + cfg_info.target_id\
+    + easy_corpus + cfg_info.filename  + ".clean." + cfg_info.target_id\
     + " -d " + easy_corpus + "vocab." + cfg_info.target_id + ".pkl "\
     + " -v " +  " 30000"\
     + " -b " + easy_corpus + "binarized_text." + cfg_info.target_id + ".pkl"\
@@ -548,15 +574,22 @@ def shuff(cfg_info):
   os.system (command1)
 
 def nmt_prepare(cfg_info):
+  # cpnmt(cfg_info)
   pkl(cfg_info)
   invert(cfg_info)
   hdf5(cfg_info)
   shuff(cfg_info)
 
 def nmt_train(cfg_info):
-  command1 = "python " + nmt_path + "train.py "\
-    + " --proto=" + "a_prototype_state_of_choice "\
-    + " --state " + easy_nmt + "state_of_" + str(easy_experiment_id) + ".py"
+  # command1 = "python " + easy_nmt + "GroundHog/experiments/nmt/train.py "\
+    # + " --proto=" + "prototype_search_state "
+  # print easy_nmt, "======"
+  command1 = "python " + nmt_path + "train.py"\
+    + " --proto=" + "prototype_search_state"\
+    + " --state " + easy_nmt + "state.py"\
+    + " >& " + easy_nmt + "out.txt &"
+  write_step (command1)
+  os.system (command1)
 
 def nmt_test():
   command1 = "python " + nmt_path + "sample.py"\
@@ -621,12 +654,13 @@ def easymoses ():
   # corpus_preparation (cfg_info)
   # language_model_training (cfg_info)
   # training_translation_system (cfg_info)
-  # tuning (cfg_info)
+  tuning (cfg_info)
   # testing (cfg_info)
 
   # nplm (cfg_info)
   # bnplm (cfg_info)
-  # nmt(cfg_info)
+  # nmt_prepare(cfg_info)
+  # nmt_train(cfg_info)
 
 
 
@@ -634,4 +668,5 @@ def easymoses ():
 
 if __name__ == "__main__" :
   easymoses ()
+  # chinesetok("/home/share/data/BOLT_Phase/Tokenized/Test/CHT.Test.zh", "/home/xwshi/data/CHT/notok/CHT.Test.zh")
   print str (time.strftime('%Y-%m-%d-%X',time.localtime(time.time())))
