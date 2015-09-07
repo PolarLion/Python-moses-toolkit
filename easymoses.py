@@ -14,7 +14,7 @@ sys.setdefaultencoding('utf8')
 
 cfg_info = easyconfig.CfgInfo()
 
-easy_experiment_id = 17
+easy_experiment_id = 16
 easy_corpus = ""
 easy_truecaser = ""
 easy_logs = "" 
@@ -386,12 +386,12 @@ def run_test (cfg_info) :
     + " > " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id 
     + " 2> " + easy_evaluation + cfg_info.testfilename + ".out ")
   command2 = (cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl " 
-    + " -lc " + easy_evaluation + cfg_info.testfilename + ".tok." + cfg_info.target_id 
+    + " -lc " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.target_id 
     + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id
     # + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id + ".new"
     )
-  write_step (command1)
-  os.system (command1)
+  # write_step (command1)
+  # os.system (command1)
   write_step (command2)
   os.system (command2)
 
@@ -483,12 +483,12 @@ def compare_resultt (cfg_info, exp_id):
 
 def testing (cfg_info) :
   # t_start (cfg_info)
-  t_tokenisation (cfg_info)
-  t_truecasing (cfg_info)
+  # t_tokenisation (cfg_info)
+  # t_truecasing (cfg_info)
   #t_filter_model_given_input (cfg_info)
   run_test (cfg_info)
   view_result (cfg_info)
-  compare_resultt (cfg_info, 11)
+  compare_resultt (cfg_info, 0)
 #########################  test  ###########################
 
 #########################  nmt ############################
@@ -591,12 +591,17 @@ def nmt_train(cfg_info):
   write_step (command1)
   os.system (command1)
 
-def nmt_test():
+def nmt_test(cfg_info):
   command1 = "python " + nmt_path + "sample.py"\
     + " --beam-search "\
-    + " --state state.pkl "\
-    + " --model_path model.npz"\
-    + " --source " + easy_evaluation + cfg_info.testfilename + ".tok." + cfg_info.source_id 
+    + " --beam-size 12"\
+    + " --state " + easy_nmt + "search_state.pkl "\
+    + " --source " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.source_id\
+    + " --trans " + easy_evaluation + cfg_info.filename + ".translated." + cfg_info.target_id\
+    + " " + easy_nmt + "search_model.npz"\
+    + " >& " + easy_evaluation + "trans_out.txt &"
+  write_step(command1)
+  os.system(command1)
 
 #########################  nmt ############################
 
@@ -654,13 +659,14 @@ def easymoses ():
   # corpus_preparation (cfg_info)
   # language_model_training (cfg_info)
   # training_translation_system (cfg_info)
-  tuning (cfg_info)
-  # testing (cfg_info)
+  # tuning (cfg_info)
+  testing (cfg_info)
 
   # nplm (cfg_info)
   # bnplm (cfg_info)
   # nmt_prepare(cfg_info)
   # nmt_train(cfg_info)
+  # nmt_test(cfg_info)
 
 
 

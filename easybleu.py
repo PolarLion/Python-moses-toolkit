@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-  
 
-
 import math
 import os
 import sys
-
-
-
-
 
 def corrects (translated, reference) :
     corrects = 0
@@ -16,7 +11,6 @@ def corrects (translated, reference) :
         # print k, v, reference.get(k, 0)
         corrects += min (v, reference.get (k, 0))
     return corrects
-
 
 def score (translated, reference, n) :
     tl = translated
