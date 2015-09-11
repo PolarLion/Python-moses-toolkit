@@ -14,7 +14,7 @@ sys.setdefaultencoding('utf8')
 
 cfg_info = easyconfig.CfgInfo()
 
-easy_experiment_id = 16
+easy_experiment_id = "k0"
 easy_corpus = ""
 easy_truecaser = ""
 easy_logs = "" 
@@ -250,7 +250,7 @@ def corpus_preparation (cfg_info) :
   tokenisation (cfg_info)
   truecaser (cfg_info)
   truecasing (cfg_info)
-  limiting_sentence_length (cfg_info)
+  # limiting_sentence_length (cfg_info)
   # print "finish corpus preparation"
 
 def tuning (cfg_info) :
@@ -390,8 +390,8 @@ def run_test (cfg_info) :
     + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id
     # + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id + ".new"
     )
-  # write_step (command1)
-  # os.system (command1)
+  write_step (command1)
+  os.system (command1)
   write_step (command2)
   os.system (command2)
 
@@ -483,8 +483,8 @@ def compare_resultt (cfg_info, exp_id):
 
 def testing (cfg_info) :
   # t_start (cfg_info)
-  # t_tokenisation (cfg_info)
-  # t_truecasing (cfg_info)
+  t_tokenisation (cfg_info)
+  t_truecasing (cfg_info)
   #t_filter_model_given_input (cfg_info)
   run_test (cfg_info)
   view_result (cfg_info)
@@ -522,14 +522,14 @@ def chinesetok(input, output):
   outfile.close()
 
 def pkl (cfg_info):
-  command1 = "python " + nmt_path + "preprocess/preprocess.py " \
-    + easy_corpus + cfg_info.filename  + ".clean." + cfg_info.source_id\
+  command1 = "python " + nmt_path + "preprocess/preprocess.py "\
+    + easy_corpus + cfg_info.filename  + ".true." + cfg_info.source_id\
     + " -d " + easy_corpus + "vocab." + cfg_info.source_id + ".pkl "\
     + " -v " +  " 30000"\
     + " -b " + easy_corpus + "binarized_text." + cfg_info.source_id + ".pkl"\
     + " -p " #+ easy_corpus + "*en.txt.gz"
   command2 = "python " + nmt_path + "preprocess/preprocess.py " \
-    + easy_corpus + cfg_info.filename  + ".clean." + cfg_info.target_id\
+    + easy_corpus + cfg_info.filename  + ".true." + cfg_info.target_id\
     + " -d " + easy_corpus + "vocab." + cfg_info.target_id + ".pkl "\
     + " -v " +  " 30000"\
     + " -b " + easy_corpus + "binarized_text." + cfg_info.target_id + ".pkl"\
@@ -597,7 +597,7 @@ def nmt_test(cfg_info):
     + " --beam-size 12"\
     + " --state " + easy_nmt + "search_state.pkl "\
     + " --source " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.source_id\
-    + " --trans " + easy_evaluation + cfg_info.filename + ".translated." + cfg_info.target_id\
+    + " --trans " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id\
     + " " + easy_nmt + "search_model.npz"\
     + " >& " + easy_evaluation + "trans_out.txt &"
   write_step(command1)
@@ -654,6 +654,40 @@ def nplm (cfg_info) :
   # prepare_neural_language_model (cfg_info)
   train_neural_network (cfg_info)
 
+def prepare_chtgiga_corpus():
+  tginfile = open ('/home/xwshi/easymoses_workspace/corpus/giga/giga_wpb_eng.txt', 'r')
+  tcinfile = open ('/home/xwshi/data/CHT/notok/CHT.Train.en', 'r')
+  toutfile = open ('/home/xwshi/data/CHT/cht-giga/CHT.Train.en', 'w')
+  count_line = 0
+  max_line = 100000
+  for line in tginfile.readlines():
+    # line = line.split('.,')[0]
+    line = line.strip()
+    toutfile.write(line+'\n')
+    count_line += 1
+    if count_line >= max_line: break
+  for line in tcinfile.readlines():
+    line = line.strip()
+    toutfile.write(line+'\n')
+  tginfile.close()
+  tcinfile.close()
+  toutfile.close()
+  scinfile = open('/home/xwshi/data/CHT/notok/CHT.Train.zh', 'r')
+  soutfile = open('/home/xwshi/data/CHT/cht-giga/CHT.Train.zh', 'w')
+  count_line = 0
+  while(True):
+    soutfile.write("\n")
+    count_line += 1
+    if count_line >= max_line:break
+  for line in scinfile.readlines():
+    line = line.strip()
+    soutfile.write(line + '\n')
+  scinfile.close()
+  soutfile.close()
+
+def cross_corpus(id1, id2, cfg_info):
+  command1 = ""
+
 def easymoses ():
   preparation (cfg_info)
   # corpus_preparation (cfg_info)
@@ -674,5 +708,7 @@ def easymoses ():
 
 if __name__ == "__main__" :
   easymoses ()
+  # prepare_chtgiga_corpus()
   # chinesetok("/home/share/data/BOLT_Phase/Tokenized/Test/CHT.Test.zh", "/home/xwshi/data/CHT/notok/CHT.Test.zh")
+  # chinesetok("/home/share/data/BOLT_Phase/Raw/Test/CTS.Test.zh", "/home/xwshi/data/BLOT/noseg/CTS.Test.zh")
   print str (time.strftime('%Y-%m-%d-%X',time.localtime(time.time())))
