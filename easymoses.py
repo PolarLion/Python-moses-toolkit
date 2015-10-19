@@ -14,7 +14,12 @@ sys.setdefaultencoding('utf8')
 
 cfg_info = easyconfig.CfgInfo()
 
-easy_experiment_id = "k0"
+nmt_path = "/home/xwshi/tools/GroundHog/experiments/nmt/"
+
+# easy_experiment_id = "k0"
+# easy_experiment_id = 18
+easy_experiment_id = "nmt300"
+# easy_experiment_id = "test"
 easy_corpus = ""
 easy_truecaser = ""
 easy_logs = "" 
@@ -101,6 +106,7 @@ def preparation (cfg_info) :
 def write_step (command) :
   outfile = open (easy_steps + str (easy_experiment_id) + ".step", 'a')
   outfile.write (str (time.strftime('%Y-%m-%d %A %X %Z',time.localtime(time.time())) ) + "\n")
+  outfile.write ("pid: " + str(os.getpid()))
   outfile.write (command + "\n")
   outfile.close ()
 
@@ -257,7 +263,7 @@ def tuning (cfg_info) :
   # print "tuning"
   tuning_tokenizer (cfg_info)
   tuning_truecase (cfg_info)
-  tuning_process (cfg_info)
+  # tuning_process (cfg_info)
   # print "finish tuning"
 
 def language_model_training (cfg_info) :
@@ -388,16 +394,17 @@ def run_test (cfg_info) :
   command2 = (cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl " 
     + " -lc " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.target_id 
     + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id
-    # + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id + ".new"
+    # + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id + ".9"
     )
-  write_step (command1)
-  os.system (command1)
+  # write_step (command1)
+  # os.system (command1)
   write_step (command2)
   os.system (command2)
 
 def view_result (cfg_info) :
   translation_result = open (easy_evaluation + "translation_result.txt", 'w')
-  translated = open (easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id, 'r')
+  # translated = open (easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id, 'r')
+  translated = open (easy_evaluation + "CHT.Test.translated.en.918", 'r')
   source = open (easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.source_id, 'r')
   target = open (easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.target_id, 'r')
   count = 0
@@ -486,15 +493,15 @@ def testing (cfg_info) :
   t_tokenisation (cfg_info)
   t_truecasing (cfg_info)
   #t_filter_model_given_input (cfg_info)
-  run_test (cfg_info)
-  view_result (cfg_info)
-  compare_resultt (cfg_info, 0)
+  # run_test (cfg_info)
+  # view_result (cfg_info)
+  # compare_resultt (cfg_info, 0)
 #########################  test  ###########################
 
 #########################  nmt ############################
 #data preparation
 #after tokenized
-nmt_path = "/home/xwshi/tools/GroundHog/experiments/nmt/"
+
 
 def chinesetok(input, output):
   state = 0
@@ -525,7 +532,7 @@ def pkl (cfg_info):
   command1 = "python " + nmt_path + "preprocess/preprocess.py "\
     + easy_corpus + cfg_info.filename  + ".true." + cfg_info.source_id\
     + " -d " + easy_corpus + "vocab." + cfg_info.source_id + ".pkl "\
-    + " -v " +  " 30000"\
+    + " -v " +  " 50000"\
     + " -b " + easy_corpus + "binarized_text." + cfg_info.source_id + ".pkl"\
     + " -p " #+ easy_corpus + "*en.txt.gz"
   command2 = "python " + nmt_path + "preprocess/preprocess.py " \
@@ -603,6 +610,27 @@ def nmt_test(cfg_info):
   write_step(command1)
   os.system(command1)
 
+def nmt_dev(cfg_info):
+  command1 = "python " + nmt_path + "sample.py"\
+    + " --beam-search "\
+    + " --beam-size 12"\
+    + " --state " + easy_nmt + "search_state.pkl "\
+    + " --source " + easy_tuning + cfg_info.devfilename + ".true." + cfg_info.source_id\
+    + " --trans " + easy_tuning + cfg_info.devfilename + ".translated." + cfg_info.target_id\
+    + " " + easy_nmt + "search_model.npz"\
+    + " >& " + easy_tuning + "trans_out.txt &"
+  write_step(command1)
+  os.system(command1)
+
+def nmt_dev_res(cfg_info):
+  command2 = (cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl " 
+    + " -lc " + easy_tuning + cfg_info.devfilename + ".true." + cfg_info.target_id 
+    + " < " + easy_tuning + cfg_info.devfilename + ".translated." + cfg_info.target_id
+    # + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id + ".9"
+    )
+  write_step (command2)
+  os.system (command2)
+
 #########################  nmt ############################
 
 ######################### Training NPLM #############################
@@ -650,43 +678,71 @@ def train_neural_network (cfg_info) :
   os.system (command1)
 
 def nplm (cfg_info) :
-  # prepare_corpus (cfg_info)
+  prepare_corpus (cfg_info)
   # prepare_neural_language_model (cfg_info)
-  train_neural_network (cfg_info)
+  # train_neural_network (cfg_info)
 
 def prepare_chtgiga_corpus():
   tginfile = open ('/home/xwshi/easymoses_workspace/corpus/giga/giga_wpb_eng.txt', 'r')
   tcinfile = open ('/home/xwshi/data/CHT/notok/CHT.Train.en', 'r')
-  toutfile = open ('/home/xwshi/data/CHT/cht-giga/CHT.Train.en', 'w')
+  toutfile = open ('/home/xwshi/data/CHT/cht-giga2/CHT.Train.en', 'w')
+  soutfile = open('/home/xwshi/data/CHT/cht-giga2/CHT.Train.zh', 'w')
   count_line = 0
   max_line = 100000
   for line in tginfile.readlines():
-    # line = line.split('.,')[0]
+    # line = line.split('.,g)[0]
     line = line.strip()
     toutfile.write(line+'\n')
-    count_line += 1
+    soutfile.write(line+'\n')
+    #ount_line += 1
     if count_line >= max_line: break
   for line in tcinfile.readlines():
     line = line.strip()
     toutfile.write(line+'\n')
+    
   tginfile.close()
   tcinfile.close()
   toutfile.close()
   scinfile = open('/home/xwshi/data/CHT/notok/CHT.Train.zh', 'r')
-  soutfile = open('/home/xwshi/data/CHT/cht-giga/CHT.Train.zh', 'w')
+  
   count_line = 0
-  while(True):
-    soutfile.write("\n")
-    count_line += 1
-    if count_line >= max_line:break
+  # while(True):
+  #   soutfile.write("\n")
+  #   count_line += 1
+  #   if count_line >= max_line:break
   for line in scinfile.readlines():
     line = line.strip()
     soutfile.write(line + '\n')
   scinfile.close()
   soutfile.close()
 
-def cross_corpus(id1, id2, cfg_info):
-  command1 = ""
+def cross_corpus(id1, mt_type, tag, cfg_info):
+  command1 = "python " + nmt_path + "sample.py"\
+    + " --beam-search "\
+    + " --beam-size 12"\
+    + " --state " + cfg_info.workspace + "nmt/" + id1 + "/" + "search_state.pkl "\
+    + " --source " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.source_id\
+    + " --trans " + easy_evaluation + cfg_info.testfilename + ".translated." + id1 + "." + cfg_info.target_id\
+    + " " + cfg_info.workspace + "nmt/" + id1 + "/" + "search_model.npz"\
+    + " >& " + easy_evaluation + id1 + "_out.txt &"
+  command2 = "nohup nice " + cfg_info.mosesdecoder_path + "bin/moses "\
+    + " -threads " + cfg_info.threads\
+    + " -f " + cfg_info.workspace + "tuning/" + id1 + "/"+  "moses.ini "\
+    + " < " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.source_id\
+    + " > " + easy_evaluation + cfg_info.testfilename + ".translated." + id1 + "." + cfg_info.target_id\
+    + " 2> " + easy_evaluation + id1 + "_out.txt"
+  command3 = cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl "\
+    + " -lc " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.target_id\
+    + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + id1 + "." + cfg_info.target_id
+  if tag == "tr" and mt_type == "nmt":
+    write_step(command1)
+    os.system(command1)
+  elif tag == "tr" and mt_type == "smt":
+    write_step(command2)
+    os.system(command2)
+  if tag == "te":
+    write_step(command3)
+    os.system(command3)
 
 def easymoses ():
   preparation (cfg_info)
@@ -694,21 +750,28 @@ def easymoses ():
   # language_model_training (cfg_info)
   # training_translation_system (cfg_info)
   # tuning (cfg_info)
-  testing (cfg_info)
-
+  # testing (cfg_info)
+  # cross_corpus("18", "nmt", "te", cfg_info)
+  # cross_corpus("17", "smt", "te", cfg_info)
   # nplm (cfg_info)
   # bnplm (cfg_info)
   # nmt_prepare(cfg_info)
   # nmt_train(cfg_info)
-  # nmt_test(cfg_info)
+  # nmt_dev(cfg_info)
+  # nmt_dev_res(cfg_info)
+  nmt_test(cfg_info)
 
 
 
 
 
 if __name__ == "__main__" :
+  if sys.argv[1] != easy_experiment_id:
+    print "you input a wrong experiment id"
+    exit()
   easymoses ()
   # prepare_chtgiga_corpus()
   # chinesetok("/home/share/data/BOLT_Phase/Tokenized/Test/CHT.Test.zh", "/home/xwshi/data/CHT/notok/CHT.Test.zh")
   # chinesetok("/home/share/data/BOLT_Phase/Raw/Test/CTS.Test.zh", "/home/xwshi/data/BLOT/noseg/CTS.Test.zh")
+  # chinesetok("/home/xwshi/data/gale-p1/gale.comb.zh", "/home/xwshi/data/gale-p1/tok/gale.comb.zh")
   print str (time.strftime('%Y-%m-%d-%X',time.localtime(time.time())))
