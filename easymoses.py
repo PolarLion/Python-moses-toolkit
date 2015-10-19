@@ -33,25 +33,6 @@ easy_nplm = ""
 easy_nmt = ""
 easy_steps = ""
 
-def read_state (cfg_info) :
-  global easy_experiment_id
-  if os.path.isfile (cfg_info.workspace + ".easystate") :
-    infile = open (cfg_info.workspace + ".easystate", 'r')
-    for line in infile :
-      if  re.match (r'last-num( *)=( *)".*"', line) :
-        # print "******************************  ", line.split('\"')[1]
-        easy_experiment_id = int (line.split('\"')[1])
-        print easy_experiment_id
-  else :
-    outfile = open (cfg_info.workspace + ".easystate", 'w')
-    easy_experiment_id = 0
-    outfile.write ("last-num=\"" + str (easy_experiment_id) + "\"")
-    outfile.close ()
-
-  outfile = open (cfg_info.workspace + ".easystate", 'w')
-  outfile.write ("last-num=\"" + str (easy_experiment_id + 1) + "\"")
-  outfile.close ()
-
 ######################### preparation #####################
 def preparation (cfg_info) :
   global easy_corpus
@@ -320,24 +301,6 @@ def bnplm (cfg_info) :
   averagebNullEmbedding (cfg_info)
 
 ####################### testing #############################################
-# def t_start (cfg_info) :
-#   command1 = cfg_info.mosesdecoder_path + "bin/moses -f " 
-#     + cfg_info.working_path + "moses.ini"
-#   command2 = cfg_info.mosesdecoder_path + "bin/processPhraseTableMin " 
-#     + " -in " + cfg_info.working_path + "train/model/phrase-table.gz "
-#     + " -nscores 4 " 
-#     + " -out " + cfg_info.working_path + "binarised-model/phrase-table "
-#   command3 = cfg_info.mosesdecoder_path + "bin/processLexicalTableMin " 
-#     + " -in " + cfg_info.working_path + "train/model/reordering-table.wbe-msd-bidirectional-fe.gz " 
-#     + " -out " + cfg_info.working_path + "binarised-model/reordering-table"
-#   write_step (command1)
-#   os.system (command1)
-#   if not os.path.exists (cfg_info.working_path + "binarised-model ") :
-#     os.system ("mkdir " + cfg_info.working_path + "binarised-model ")
-#   write_step (command2)
-#   os.system (command2)
-#   write_step (command3)
-#   os.system (command3)
 
 def t_tokenisation (cfg_info) :
   command1 = (cfg_info.mosesdecoder_path + "scripts/tokenizer/tokenizer.perl -l " + cfg_info.source_id 
@@ -500,34 +463,6 @@ def testing (cfg_info) :
 
 #########################  nmt ############################
 #data preparation
-#after tokenized
-
-
-def chinesetok(input, output):
-  state = 0
-  infile = open (input, 'r')
-  outfile = open (output, 'w')
-  for line in infile.readlines():
-    words = line.decode('utf-8')
-    new_line = ""
-    for word in words:
-      ch = word.encode('utf-8')
-      if (ch.isalnum() or ch == '.') and state == 0:
-        new_line += " " + ch
-        state = 1
-      elif state == 1 and (ch.isalnum() or ch == '.'):
-        new_line += ch
-      elif ch.isspace():
-        a = 0
-      elif not ch.isalnum():
-        state = 0
-        new_line += " " + ch
-    new_line = new_line.strip()
-    # print new_line
-    outfile.write(new_line+"\n")
-  infile.close()
-  outfile.close()
-
 def pkl (cfg_info):
   command1 = "python " + nmt_path + "preprocess/preprocess.py "\
     + easy_corpus + cfg_info.filename  + ".true." + cfg_info.source_id\
@@ -682,40 +617,6 @@ def nplm (cfg_info) :
   # prepare_neural_language_model (cfg_info)
   # train_neural_network (cfg_info)
 
-def prepare_chtgiga_corpus():
-  tginfile = open ('/home/xwshi/easymoses_workspace/corpus/giga/giga_wpb_eng.txt', 'r')
-  tcinfile = open ('/home/xwshi/data/CHT/notok/CHT.Train.en', 'r')
-  toutfile = open ('/home/xwshi/data/CHT/cht-giga2/CHT.Train.en', 'w')
-  soutfile = open('/home/xwshi/data/CHT/cht-giga2/CHT.Train.zh', 'w')
-  count_line = 0
-  max_line = 100000
-  for line in tginfile.readlines():
-    # line = line.split('.,g)[0]
-    line = line.strip()
-    toutfile.write(line+'\n')
-    soutfile.write(line+'\n')
-    #ount_line += 1
-    if count_line >= max_line: break
-  for line in tcinfile.readlines():
-    line = line.strip()
-    toutfile.write(line+'\n')
-    
-  tginfile.close()
-  tcinfile.close()
-  toutfile.close()
-  scinfile = open('/home/xwshi/data/CHT/notok/CHT.Train.zh', 'r')
-  
-  count_line = 0
-  # while(True):
-  #   soutfile.write("\n")
-  #   count_line += 1
-  #   if count_line >= max_line:break
-  for line in scinfile.readlines():
-    line = line.strip()
-    soutfile.write(line + '\n')
-  scinfile.close()
-  soutfile.close()
-
 def cross_corpus(id1, mt_type, tag, cfg_info):
   command1 = "python " + nmt_path + "sample.py"\
     + " --beam-search "\
@@ -759,7 +660,7 @@ def easymoses ():
   # nmt_train(cfg_info)
   # nmt_dev(cfg_info)
   # nmt_dev_res(cfg_info)
-  nmt_test(cfg_info)
+  # nmt_test(cfg_info)
 
 
 
@@ -770,8 +671,4 @@ if __name__ == "__main__" :
     print "you input a wrong experiment id"
     exit()
   easymoses ()
-  # prepare_chtgiga_corpus()
-  # chinesetok("/home/share/data/BOLT_Phase/Tokenized/Test/CHT.Test.zh", "/home/xwshi/data/CHT/notok/CHT.Test.zh")
-  # chinesetok("/home/share/data/BOLT_Phase/Raw/Test/CTS.Test.zh", "/home/xwshi/data/BLOT/noseg/CTS.Test.zh")
-  # chinesetok("/home/xwshi/data/gale-p1/gale.comb.zh", "/home/xwshi/data/gale-p1/tok/gale.comb.zh")
   print str (time.strftime('%Y-%m-%d-%X',time.localtime(time.time())))
