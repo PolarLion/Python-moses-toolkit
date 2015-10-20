@@ -119,7 +119,7 @@ def check_corpus(path, sid, tid):
     else:
       print "wrong corpus", afile
     count_lines += len1
-    #print afile+"."+sid, len1, afile+"."+tid, len2
+    print afile+"."+sid, len1, afile+"."+tid, len2
   print "total : ", count_lines
   return file_dict
 
@@ -151,23 +151,78 @@ def divide_corpus(inpath, outpath, num, file_dict):
     infile.close()
 
 
+def count_corpus_words(path):
+  import re
+  files = os.listdir(path)
+  total_words = {'zh':0,'en':0}
+  words={'zh':{},'en':{}}
+  for afile in files:
+    #if not afile.split('.')[0] == 'CHT':continue
+    fileid=afile.split('.')[1]
+    infile=open(os.path.join(path,afile), 'r')
+    wordlist = re.split(r'[\s\n]\s*', infile.read())
+    print afile, len(wordlist)
+    #print wordlist
+    #break
+    total_words[fileid]+=len(wordlist)
+    for word in wordlist:
+      if words[fileid].has_key(word):
+        words[fileid][word] += 1
+      else:
+        words[fileid][word] = 1
+  print total_words, "zh:",len(words['zh']), "en:", len(words['en'])
+  count_frq = 0
+  for k,v in words['en'].items():
+    if v > 1:
+      count_frq += 1
+  print count_frq
+
+
+def batch_create_corpus(inpath,opath):
+  dirs = os.listdir(inpath)
+  for i in range(0,10):
+    oopath = os.path.join(opath, str(i))
+    osfile = open(os.path.join(oopath, "C_B.Train.zh"),'w')
+    otfile = open(os.path.join(oopath, "C_B.Train.en"),'w')
+    for ii in range(0, i+1):
+      iipath = os.path.join(inpath, str(ii))
+      files = os.listdir(iipath)
+      for afile in files:
+        infile = open(os.path.join(iipath, afile),'r')
+        if afile.split('.')[1] == 'en':
+          otfile.write(infile.read())
+        elif afile.split('.')[1] == 'zh':
+          osfile.write(infile.read())
+        infile.close()
+    osfile.close()
+    otfile.close
+
+
+
+
 
 def main():
   print "hello polarlion"
   #prepare_gale_corpus("/home/xwshi/data/ldc-zh-en/gale_p1_ch_blog", "/home/xwshi/data/ldc-zh-en/gale", "gale_p1_ch_blog")
   #batch_untar("/home/xwshi/data/ldc-zh-en/tgz", "/home/xwshi/data/ldc-zh-en/untgz/")
   #batch_prepare_gale_corpus("/home/xwshi/data/ldc-zh-en/untgz/", "/home/xwshi/data/ldc-zh-en/gale")
-  file_dict=check_corpus("/home/xwshi/data/ldc-zh-en/gale", "zh", "en")
+  #file_dict=check_corpus("/home/xwshi/data/ldc-zh-en/gale", "zh", "en")
   #chinesetok("/home/xwshi/data/ldc-zh-en/gale/CHT.zh", "/home/xwshi/data/ldc-zh-en/gale/t.CHT.zh")
   #files2file("/home/xwshi/data/ldc-zh-en/LDC2005T10cn_en_news_magazine_parallel_text/data/source", "/home/xwshi/data/ldc-zh-en/gale/cn_en_news_magazine_parallel_text.zh.tmp")
   #chinesetok("/home/xwshi/data/ldc-zh-en/gale/cn_en_news_magazine_parallel_text.zh.tmp", "/home/xwshi/data/ldc-zh-en/gale/cn_en_news_magazine_parallel_text.zh")
   #files2file("/home/xwshi/data/ldc-zh-en/LDC2005T10cn_en_news_magazine_parallel_text/data/translation", "/home/xwshi/data/ldc-zh-en/gale/cn_en_news_magazine_parallel_text.en")
-  divide_corpus("/home/xwshi/data/ldc-zh-en/gale", "/home/xwshi/data/ldc-zh-en/gale-divide", 10, file_dict)
+  #divide_corpus("/home/xwshi/data/ldc-zh-en/gale", "/home/xwshi/data/ldc-zh-en/gale-divide", 10, file_dict)
+  #count_corpus_words("/home/xwshi/data/ldc-zh-en/gale")
+  batch_create_corpus("/home/xwshi/data/ldc-zh-en/gale-divide", "/home/xwshi/data/Corpus-Bleu")
   for i in range(0,10):
     a = 0
-    check_corpus("/home/xwshi/data/ldc-zh-en/gale-divide/"+str(i), "zh", "en")
+    #check_corpus("/home/xwshi/data/ldc-zh-en/gale-divide/"+str(i), "zh", "en")
+    check_corpus("/home/xwshi/data/Corpus-Bleu/"+str(i), "Train.zh", "Train.en")
+
 
 
 if __name__=="__main__":
+  import time
+  print str (time.strftime('%Y-%m-%d %X',time.localtime(time.time())))
   main()
 
