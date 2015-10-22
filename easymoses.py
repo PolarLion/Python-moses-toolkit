@@ -7,6 +7,7 @@ import re
 import time
 import easybleu
 import easyconfig
+import easycorpus
 
 
 reload(sys)
@@ -18,7 +19,7 @@ nmt_path = "/home/xwshi/tools/GroundHog/experiments/nmt/"
 
 # easy_experiment_id = "k0"
 # easy_experiment_id = 18
-easy_experiment_id = "nmt300"
+easy_experiment_id = "nmt-CB-1"
 # easy_experiment_id = "test"
 easy_corpus = ""
 easy_truecaser = ""
@@ -27,6 +28,7 @@ easy_lm = ""
 easy_working = ""
 easy_train = ""
 easy_tuning = ""
+easy_overfitting = ""
 easy_evaluation = ""
 easy_blm = ""
 easy_nplm = ""
@@ -47,6 +49,7 @@ def preparation (cfg_info) :
   global easy_blm
   global easy_nplm
   global easy_nmt
+  global easy_overfitting
   # read_state (cfg_info)
 
   print "experiment id: ", easy_experiment_id
@@ -74,6 +77,8 @@ def preparation (cfg_info) :
   if not os.path.exists (easy_nplm) : os.system ("mkdir " + easy_nplm)
   easy_nmt = cfg_info.workspace + "nmt/" + str(easy_experiment_id) + "/"
   if not os.path.exists (easy_nmt) : os.system ("mkdir " + easy_nmt)
+  easy_overfitting = cfg_info.workspace + "overfitting/" + str(easy_experiment_id) + "/"
+  if not os.path.exists (easy_overfitting) : os.system ("mkdir " + easy_overfitting)
 
   outfile = open (easy_logs + str (easy_experiment_id) + ".log", 'w')
   outfile.write (str (time.strftime('%Y-%m-%d %A %X %Z',time.localtime(time.time())) ))
@@ -420,7 +425,7 @@ def compare_resultt (cfg_info, exp_id):
       key = score1 - score2
       if key in result_set :
           result_set [key].append (item)
-      else :
+      else:
           result_set [key] = []
           result_set [key].append (item)
       # if count > 0 : break
@@ -461,19 +466,31 @@ def testing (cfg_info) :
   # compare_resultt (cfg_info, 0)
 #########################  test  ###########################
 
+def overfitting_prepare(cfg_info):
+  sampling_base = 10
+  easycorpus.sampling_file(easy_corpus+cfg_info.filename+".true."+cfg_info.source_id, 
+    easy_overfitting+"OF.true."+cfg_info.source_id, sampling_base)
+  easycorpus.sampling_file(easy_corpus+cfg_info.filename+".true."+cfg_info.target_id, 
+    easy_overfitting+"OF.true."+cfg_info.target_id, sampling_base)
+  write_step("overfitting_prepare")
+
 #########################  nmt ############################
+
+source_voc = "10000"
+target_voc = "40000"
+
 #data preparation
 def pkl (cfg_info):
   command1 = "python " + nmt_path + "preprocess/preprocess.py "\
     + easy_corpus + cfg_info.filename  + ".true." + cfg_info.source_id\
     + " -d " + easy_corpus + "vocab." + cfg_info.source_id + ".pkl "\
-    + " -v " +  " 50000"\
+    + " -v " + source_voc\
     + " -b " + easy_corpus + "binarized_text." + cfg_info.source_id + ".pkl"\
     + " -p " #+ easy_corpus + "*en.txt.gz"
   command2 = "python " + nmt_path + "preprocess/preprocess.py " \
     + easy_corpus + cfg_info.filename  + ".true." + cfg_info.target_id\
     + " -d " + easy_corpus + "vocab." + cfg_info.target_id + ".pkl "\
-    + " -v " +  " 30000"\
+    + " -v " + target_voc\
     + " -b " + easy_corpus + "binarized_text." + cfg_info.target_id + ".pkl"\
     + " -p " #+ easy_corpus + "*en.txt.gz"
   write_step (command1)
@@ -565,8 +582,79 @@ def nmt_dev_res(cfg_info):
     )
   write_step (command2)
   os.system (command2)
+  translation_result = open (easy_tuning + "translation_result.txt", 'w')
+  translated = open (easy_tuning + cfg_info.devfilename + ".translated." + cfg_info.target_id, 'r')
+  source = open (easy_tuning + cfg_info.devfilename + ".true." + cfg_info.source_id, 'r')
+  target = open (easy_tuning + cfg_info.devfilename + ".true." + cfg_info.target_id, 'r')
+  count = 0
+  for tran_line in translated :
+    source_line = source.readline ()
+    if source_line : translation_result.write ("[#" + str(count) + "] " + source_line)
+    else : 
+      print "eeeeeeeeeerror  " + str (count)
+      break  
+    target_line = target.readline ()
+    translation_result.write ("[" + str(easybleu.bleu (tran_line, target_line)) + "] " + tran_line)
+    if target_line : 
+      translation_result.write ("[ref] " + target_line) 
+    else :
+      print "errrrrrrrrrrror" + str (count)
+      break
+    count += 1
+
+def nmt_check_overfitting_1(cfg_info):
+  command1 = "python " + nmt_path + "sample.py"\
+    + " --beam-search "\
+    + " --beam-size 12"\
+    + " --state " + easy_nmt + "search_state.pkl "\
+    + " --source " + easy_overfitting + "OF.true." + cfg_info.source_id\
+    + " --trans " + easy_overfitting + "ontrain." + cfg_info.target_id\
+    + " " + easy_nmt + "search_model.npz"\
+    + " >& " + easy_overfitting + "check_overfitting_out.txt &"
+  write_step(command1)
+  os.system(command1) 
+
+def nmt_check_overfitting_2(cfg_info):
+  command2 = (cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl " 
+    + " -lc " + easy_corpus + cfg_info.filename + ".true." + cfg_info.target_id 
+    + " < " + easy_tuning + cfg_info.filename + ".ontrain." + cfg_info.target_id
+    # + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id + ".9"
+    )
+  write_step (command2)
+  os.system (command2)
 
 #########################  nmt ############################
+
+
+def easymoses ():
+  preparation (cfg_info)
+  # corpus_preparation (cfg_info)
+  # language_model_training (cfg_info)
+  # training_translation_system (cfg_info)
+  # tuning (cfg_info)
+  # testing (cfg_info)
+  # cross_corpus("18", "nmt", "te", cfg_info)
+  # cross_corpus("17", "smt", "te", cfg_info)
+  # nplm (cfg_info)
+  # bnplm (cfg_info)
+  # nmt_prepare(cfg_info)
+  # nmt_train(cfg_info)
+  # overfitting_prepare(cfg_info)
+  nmt_check_overfitting_1(cfg_info)
+  # nmt_check_overfitting_2(cfg_info)
+  # nmt_dev(cfg_info)
+  # nmt_dev_res(cfg_info)
+
+  # nmt_test(cfg_info)
+
+
+if __name__ == "__main__" :
+  print str (time.strftime('%Y-%m-%d %X',time.localtime(time.time())))
+  if sys.argv[1] != easy_experiment_id:
+    print "you input a wrong experiment id"
+    exit()
+  easymoses ()
+
 
 ######################### Training NPLM #############################
 def prepare_corpus (cfg_info) :
@@ -644,31 +732,3 @@ def cross_corpus(id1, mt_type, tag, cfg_info):
   if tag == "te":
     write_step(command3)
     os.system(command3)
-
-def easymoses ():
-  preparation (cfg_info)
-  # corpus_preparation (cfg_info)
-  # language_model_training (cfg_info)
-  # training_translation_system (cfg_info)
-  # tuning (cfg_info)
-  # testing (cfg_info)
-  # cross_corpus("18", "nmt", "te", cfg_info)
-  # cross_corpus("17", "smt", "te", cfg_info)
-  # nplm (cfg_info)
-  # bnplm (cfg_info)
-  # nmt_prepare(cfg_info)
-  # nmt_train(cfg_info)
-  # nmt_dev(cfg_info)
-  # nmt_dev_res(cfg_info)
-  # nmt_test(cfg_info)
-
-
-
-
-
-if __name__ == "__main__" :
-  if sys.argv[1] != easy_experiment_id:
-    print "you input a wrong experiment id"
-    exit()
-  easymoses ()
-  print str (time.strftime('%Y-%m-%d-%X',time.localtime(time.time())))
