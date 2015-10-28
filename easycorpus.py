@@ -25,16 +25,16 @@ def files2file(path, filename, style="none"):
       #if i > 10:break
   outfile.close()
 
-def chinesetok(input, output):
+def chinesetok(input, output, decode="utf-8", encode="utf-8"):
   state = 0
   infile = open (input, 'r')
   outfile = open (output, 'w')
   for line in infile.readlines():
     #for c in line:print c
-    words = line.decode('utf-8', 'replace')
+    words = line.decode(decode, 'replace')
     new_line = ""
     for word in words:
-      ch = word.encode('utf-8')
+      ch = word.encode(encode)
       if (ch.isalnum() or ch == '.') and state == 0:
         new_line += " " + ch
         state = 1
@@ -208,6 +208,68 @@ def sampling_file(infilename, outfilename, sampling_base):
   infile.close()
   outfile.close()
 
+def proprocess_LDC2005T10(data_path, outpath):
+  from bs4 import BeautifulSoup  
+  import opencc
+  chinese_path = os.path.join(data_path, "data/Chinese")
+  english_path = os.path.join(data_path, "data/English")
+  alignment_path = os.path.join(data_path, "data/alignment")
+  # chinese_files = os.listdir(chinese_path)
+  # english_files = os.listdir(english_path)
+  alignment_files = os.listdir(alignment_path)
+  en_outfile = open(os.path.join(outpath, "nmpt.en"),'w')
+  ch_outfile = open(os.path.join(outpath, "nmpt.zh"),'w')
+  c_count_line = 0
+  e_count_line = 0
+  for afile in alignment_files:
+    print os.path.join(alignment_path, afile)
+    alignmet_f = open (os.path.join(alignment_path, afile))
+    a_soup = BeautifulSoup(alignmet_f.read())
+    chinese_f = open (os.path.join(chinese_path, afile),'r')
+    c_soup = BeautifulSoup(chinese_f.read(), fromEncoding="CP950")
+    english_f = open (os.path.join(english_path, afile),'r')
+    e_soup = BeautifulSoup(english_f.read())
+
+    for alig in a_soup.find_all('alignment'): 
+      # print alig
+      # print alig['docid'], type(alig['docid'])
+      for sentpair in alig.find_all('sentpair'):
+        # print sentpair
+        if sentpair['chinesesegid'] == "" or sentpair["englishsegid"] == "":continue
+        c1 = c_soup.find_all('doc', attrs={"docid":alig['docid']})
+        e1 = e_soup.find_all('doc', attrs={"docid":alig['docid']})
+        if len(c1) < 1 or len(e1) < 1:continue
+        state = 0
+        for cid in sentpair['chinesesegid'].split(','):
+          # print "zh", cid
+          c2 = c1[0].find_all('seg', attrs={'id':cid})
+          if len(c2) < 1:
+            state = 1
+            break
+          line = unicode(c2[0].string).encode('utf-8').strip()
+          line = opencc.convert(line).encode('utf8')
+          ch_outfile.write(line+" ")
+        ch_outfile.write('\n')
+        c_count_line +=1
+        for eid in sentpair['englishsegid'].split(','):
+          if state == 1:
+            state = 0
+            break
+          e2 = e1[0].find_all('seg', attrs={'id':eid})
+          if len(e2) < 1:
+            break
+          line = unicode(e2[0].string).encode('utf-8').strip()
+          en_outfile.write(line+" ")
+        en_outfile.write('\n')
+        e_count_line += 1
+    alignmet_f.close()
+    chinese_f.close()
+    english_f.close()
+  en_outfile.close()
+  ch_outfile.close()
+  print c_count_line, e_count_line
+
+
 def main():
   print "hello polarlion"
   #prepare_gale_corpus("/home/xwshi/data/ldc-zh-en/gale_p1_ch_blog", "/home/xwshi/data/ldc-zh-en/gale", "gale_p1_ch_blog")
@@ -220,11 +282,16 @@ def main():
   #files2file("/home/xwshi/data/ldc-zh-en/LDC2005T10cn_en_news_magazine_parallel_text/data/translation", "/home/xwshi/data/ldc-zh-en/gale/cn_en_news_magazine_parallel_text.en")
   #divide_corpus("/home/xwshi/data/ldc-zh-en/gale", "/home/xwshi/data/ldc-zh-en/gale-divide", 10, file_dict)
   #count_corpus_words("/home/xwshi/data/ldc-zh-en/gale")
-  batch_create_corpus("/home/xwshi/data/ldc-zh-en/gale-divide", "/home/xwshi/data/Corpus-Bleu")
+  #batch_create_corpus("/home/xwshi/data/ldc-zh-en/gale-divide", "/home/xwshi/data/Corpus-Bleu")
+  #files2file("/home/xwshi/data/ldc-zh-en/LDC2005T10/data/Chinese","/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.big5.zh")
+  # files2file("/home/xwshi/data/ldc-zh-en/LDC2005T10/data/English","/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.en")
+  proprocess_LDC2005T10("/home/xwshi/data/ldc-zh-en/LDC2005T10/", "/home/xwshi/data/ldc-zh-en/LDC2005T10/")
+  #chinesetok("/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.big5.zh", "/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.zh",'big5',"utf-8")
   for i in range(0,10):
     a = 0
     #check_corpus("/home/xwshi/data/ldc-zh-en/gale-divide/"+str(i), "zh", "en")
-    check_corpus("/home/xwshi/data/Corpus-Bleu/"+str(i), "Train.zh", "Train.en")
+    #check_corpus("/home/xwshi/data/Corpus-Bleu/"+str(i), "Train.zh", "Train.en")
+
 
 
 
