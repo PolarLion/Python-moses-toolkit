@@ -176,12 +176,12 @@ def count_corpus_words(path):
       count_frq += 1
   print count_frq
 
-def batch_create_corpus(inpath,opath):
+def batch_create_corpus(inpath,opath, num=10, filenmae="C_B"):
   dirs = os.listdir(inpath)
-  for i in range(0,10):
+  for i in range(0,num):
     oopath = os.path.join(opath, str(i))
-    osfile = open(os.path.join(oopath, "C_B.Train.zh"),'w')
-    otfile = open(os.path.join(oopath, "C_B.Train.en"),'w')
+    osfile = open(os.path.join(oopath, filenmae+".Train.zh"),'w')
+    otfile = open(os.path.join(oopath, filenmae+".Train.en"),'w')
     for ii in range(0, i+1):
       iipath = os.path.join(inpath, str(ii))
       files = os.listdir(iipath)
@@ -285,8 +285,11 @@ def main():
   #batch_create_corpus("/home/xwshi/data/ldc-zh-en/gale-divide", "/home/xwshi/data/Corpus-Bleu")
   #files2file("/home/xwshi/data/ldc-zh-en/LDC2005T10/data/Chinese","/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.big5.zh")
   # files2file("/home/xwshi/data/ldc-zh-en/LDC2005T10/data/English","/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.en")
-  proprocess_LDC2005T10("/home/xwshi/data/ldc-zh-en/LDC2005T10/", "/home/xwshi/data/ldc-zh-en/LDC2005T10/")
+  # proprocess_LDC2005T10("/home/xwshi/data/ldc-zh-en/LDC2005T10/", "/home/xwshi/data/ldc-zh-en/LDC2005T10/")
   #chinesetok("/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.big5.zh", "/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.zh",'big5',"utf-8")
+  # nmpt_dict = check_corpus("/home/xwshi/data/ldc-zh-en/ldc2005t10", "zh", "en")
+  # divide_corpus("/home/xwshi/data/ldc-zh-en/ldc2005t10", "/home/xwshi/data/ldc-zh-en/ldc2005t10_divide", 5, nmpt_dict)
+  batch_create_corpus("/home/xwshi/data/ldc-zh-en/ldc2005t10_divide", "/home/xwshi/data/CENMPT", 5, "NMPT")
   for i in range(0,10):
     a = 0
     #check_corpus("/home/xwshi/data/ldc-zh-en/gale-divide/"+str(i), "zh", "en")
