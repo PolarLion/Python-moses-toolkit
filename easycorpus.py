@@ -272,21 +272,24 @@ def proprocess_LDC2005T10(data_path, outpath):
 def load_word_dict(ifile):
   infile = open(ifile,'r')
   word_dict = {}
-  for line in infle:
+  for line in infile.readlines():
     if line.strip() != "":
       word_dict[line.strip()] = 1
   return word_dict
 
 def clear_chinese_messy_code(ifile, ofile, word_dict):
+  print len(word_dict)
   infile = open(ifile, 'r')
   outfile = open(ofile, 'w')
+  count_clear = 0
   for line in infile.readlines():
-    chs = line.strip().decode('utf-8')
+    line = line.strip()
+    chs = line.decode('utf-8')
     length = len(chs)
     count = 0.
-    count_clear = 0
+    new_line = ""
     for ch in chs:
-      if not word_dict.has_key(ch):
+      if not word_dict.has_key(ch.encode('utf-8')):
         count += 1.
     if count / length > 0.5:
       line = ""
@@ -317,12 +320,17 @@ def main():
   # nmpt_dict = check_corpus("/home/xwshi/data/ldc-zh-en/ldc2005t10", "zh", "en")
   # divide_corpus("/home/xwshi/data/ldc-zh-en/ldc2005t10", "/home/xwshi/data/ldc-zh-en/ldc2005t10_divide", 5, nmpt_dict)
   # batch_create_corpus("/home/xwshi/data/ldc-zh-en/ldc2005t10_divide", "/home/xwshi/data/CENMPT", 5, "NMPT")
-  clear_chinese_messy_code("/home/xwshi/data/ldc-zh-en/XCEPNTV1/LDC2002E18/Corpus.7.cleaned.zh", "/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18/xpnt.zh", load_word_dict("freq_chinese_word.txt"))
-  for i in range(0,5):
+  # clear_chinese_messy_code("/home/xwshi/data/ldc-zh-en/XCEPNTV1/LDC2002E18/Corpus.7.cleaned.zh", "/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18/xpnt.zh.not", load_word_dict("freq_chinese_word.txt"))
+  # chinesetok("/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18/xpnt.zh.not", "/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18/xpnt.zh")
+  # xpnt_dict = check_corpus("/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18", "zh", "en")
+  # divide_corpus("/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18", "/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18_divide", 3, xpnt_dict)
+  batch_create_corpus("/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18_divide", "/home/xwshi/data/XCEPNTV1", 3, "XPNT")
+  for i in range(0,3):
     a = 0
     #check_corpus("/home/xwshi/data/ldc-zh-en/gale-divide/"+str(i), "zh", "en")
     #check_corpus("/home/xwshi/data/Corpus-Bleu/"+str(i), "Train.zh", "Train.en")
     # check_corpus("/home/xwshi/data/CENMPT/"+str(i), "Train.zh", "Train.en")
+    check_corpus("/home/xwshi/data/XCEPNTV1/"+str(i), "Train.zh", "Train.en")
 
 
 
