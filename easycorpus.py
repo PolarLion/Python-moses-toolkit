@@ -269,6 +269,32 @@ def proprocess_LDC2005T10(data_path, outpath):
   ch_outfile.close()
   print c_count_line, e_count_line
 
+def load_word_dict(ifile):
+  infile = open(ifile,'r')
+  word_dict = {}
+  for line in infle:
+    if line.strip() != "":
+      word_dict[line.strip()] = 1
+  return word_dict
+
+def clear_chinese_messy_code(ifile, ofile, word_dict):
+  infile = open(ifile, 'r')
+  outfile = open(ofile, 'w')
+  for line in infile.readlines():
+    chs = line.strip().decode('utf-8')
+    length = len(chs)
+    count = 0.
+    count_clear = 0
+    for ch in chs:
+      if not word_dict.has_key(ch):
+        count += 1.
+    if count / length > 0.5:
+      line = ""
+      count_clear += 1
+    outfile.write(line+'\n')
+  print "cleared", count_clear
+  infile.close()
+  outfile.close()
 
 def main():
   print "hello polarlion"
@@ -287,13 +313,18 @@ def main():
   # files2file("/home/xwshi/data/ldc-zh-en/LDC2005T10/data/English","/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.en")
   # proprocess_LDC2005T10("/home/xwshi/data/ldc-zh-en/LDC2005T10/", "/home/xwshi/data/ldc-zh-en/LDC2005T10/")
   #chinesetok("/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.big5.zh", "/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.zh",'big5',"utf-8")
+  # chinesetok("/home/xwshi/data/ldc-zh-en/LDC2005T10/nmpt.zh", "/home/xwshi/data/ldc-zh-en/ldc2005t10/nmpt.zh")
   # nmpt_dict = check_corpus("/home/xwshi/data/ldc-zh-en/ldc2005t10", "zh", "en")
   # divide_corpus("/home/xwshi/data/ldc-zh-en/ldc2005t10", "/home/xwshi/data/ldc-zh-en/ldc2005t10_divide", 5, nmpt_dict)
-  batch_create_corpus("/home/xwshi/data/ldc-zh-en/ldc2005t10_divide", "/home/xwshi/data/CENMPT", 5, "NMPT")
-  for i in range(0,10):
+  # batch_create_corpus("/home/xwshi/data/ldc-zh-en/ldc2005t10_divide", "/home/xwshi/data/CENMPT", 5, "NMPT")
+  clear_chinese_messy_code("/home/xwshi/data/ldc-zh-en/XCEPNTV1/LDC2002E18/Corpus.7.cleaned.zh", "/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18/xpnt.zh", load_word_dict("freq_chinese_word.txt"))
+  for i in range(0,5):
     a = 0
     #check_corpus("/home/xwshi/data/ldc-zh-en/gale-divide/"+str(i), "zh", "en")
     #check_corpus("/home/xwshi/data/Corpus-Bleu/"+str(i), "Train.zh", "Train.en")
+    # check_corpus("/home/xwshi/data/CENMPT/"+str(i), "Train.zh", "Train.en")
+
+
 
 
 
