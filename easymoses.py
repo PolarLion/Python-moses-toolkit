@@ -19,8 +19,10 @@ nmt_path = "/home/xwshi/tools/GroundHog/experiments/nmt/"
 
 # easy_experiment_id = "k0"
 # easy_experiment_id = 18
-easy_experiment_id = "nmt-CB-1"
+# easy_experiment_id = "nmt-CB-8x2"
+# easy_experiment_id = "smt-CB-9"
 # easy_experiment_id = "test"
+easy_experiment_id = "smt-NCB-3"
 easy_corpus = ""
 easy_truecaser = ""
 easy_logs = "" 
@@ -140,9 +142,10 @@ def truecasing (cfg_info) :
   os.system (command2)
 
 def limiting_sentence_length (cfg_info) :
-  command1 = (cfg_info.mosesdecoder_path + "scripts/training/clean-corpus-n.perl " 
+  command1 = (cfg_info.mosesdecoder_path + "scripts/training/clean-corpus-n.perl "
     + " " + easy_corpus + cfg_info.filename + ".true " + cfg_info.source_id + " " + cfg_info.target_id
-    + " " + easy_corpus + cfg_info.filename + ".clean  1 " + cfg_info.sentence_length)
+    +" " + easy_corpus + cfg_info.filename +".clean  1 "
+    +cfg_info.sentence_length)
   write_step (command1)
   os.system (command1)
 ######################### corpus preparation  ###########################
@@ -242,14 +245,14 @@ def corpus_preparation (cfg_info) :
   tokenisation (cfg_info)
   truecaser (cfg_info)
   truecasing (cfg_info)
-  # limiting_sentence_length (cfg_info)
+  limiting_sentence_length (cfg_info)
   # print "finish corpus preparation"
 
 def tuning (cfg_info) :
   # print "tuning"
   tuning_tokenizer (cfg_info)
   tuning_truecase (cfg_info)
-  # tuning_process (cfg_info)
+  tuning_process (cfg_info)
   # print "finish tuning"
 
 def language_model_training (cfg_info) :
@@ -364,15 +367,15 @@ def run_test (cfg_info) :
     + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id
     # + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id + ".9"
     )
-  # write_step (command1)
-  # os.system (command1)
+  write_step (command1)
+  os.system (command1)
   write_step (command2)
   os.system (command2)
 
 def view_result (cfg_info) :
   translation_result = open (easy_evaluation + "translation_result.txt", 'w')
-  # translated = open (easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id, 'r')
-  translated = open (easy_evaluation + "CHT.Test.translated.en.918", 'r')
+  translated = open (easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id, 'r')
+  # translated = open (easy_evaluation + "CHT.Test.translated.en.918", 'r')
   source = open (easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.source_id, 'r')
   target = open (easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.target_id, 'r')
   count = 0
@@ -461,13 +464,13 @@ def testing (cfg_info) :
   t_tokenisation (cfg_info)
   t_truecasing (cfg_info)
   #t_filter_model_given_input (cfg_info)
-  # run_test (cfg_info)
-  # view_result (cfg_info)
-  # compare_resultt (cfg_info, 0)
+  run_test (cfg_info)
+  view_result (cfg_info)
+  compare_resultt (cfg_info, 0)
 #########################  test  ###########################
 
 def overfitting_prepare(cfg_info):
-  sampling_base = 10
+  sampling_base = 50
   easycorpus.sampling_file(easy_corpus+cfg_info.filename+".true."+cfg_info.source_id, 
     easy_overfitting+"OF.true."+cfg_info.source_id, sampling_base)
   easycorpus.sampling_file(easy_corpus+cfg_info.filename+".true."+cfg_info.target_id, 
@@ -551,6 +554,8 @@ def nmt_train(cfg_info):
   os.system (command1)
 
 def nmt_test(cfg_info):
+  t_tokenisation(cfg_info)
+  t_truecasing(cfg_info)
   command1 = "python " + nmt_path + "sample.py"\
     + " --beam-search "\
     + " --beam-size 12"\
@@ -616,13 +621,32 @@ def nmt_check_overfitting_1(cfg_info):
 
 def nmt_check_overfitting_2(cfg_info):
   command2 = (cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl " 
-    + " -lc " + easy_corpus + cfg_info.filename + ".true." + cfg_info.target_id 
-    + " < " + easy_tuning + cfg_info.filename + ".ontrain." + cfg_info.target_id
+    + " -lc " + easy_overfitting + "OF.true." + cfg_info.target_id 
+    + " < " + easy_overfitting + "ontrain." + cfg_info.target_id
     # + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id + ".9"
     )
   write_step (command2)
   os.system (command2)
 
+def nmt_make_backup(cfg_info):
+  dirname = easy_nmt + str(time.strftime('%Y_%m%d_%H%M',time.localtime(time.time())))
+  command1 = "mkdir " + dirname
+  if not os.path.exists(dirname):
+    write_step(command1)
+    os.system(command1)
+  command2 = "cp " + easy_nmt + "*.* " + dirname
+  write_step(command2)
+  os.system(command2)
+
+
+def bleu_score(cfg_info):
+  command2 = (cfg_info.mosesdecoder_path + "scripts/generic/multi-bleu.perl " 
+    + " -lc " + easy_evaluation + cfg_info.testfilename + ".true." + cfg_info.target_id 
+    + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id
+    # + " < " + easy_evaluation + cfg_info.testfilename + ".translated." + cfg_info.target_id + ".9"
+    )
+  write_step (command2)
+  os.system (command2)
 #########################  nmt ############################
 
 
@@ -632,7 +656,7 @@ def easymoses ():
   # language_model_training (cfg_info)
   # training_translation_system (cfg_info)
   # tuning (cfg_info)
-  # testing (cfg_info)
+  testing (cfg_info)
   # cross_corpus("18", "nmt", "te", cfg_info)
   # cross_corpus("17", "smt", "te", cfg_info)
   # nplm (cfg_info)
@@ -640,13 +664,13 @@ def easymoses ():
   # nmt_prepare(cfg_info)
   # nmt_train(cfg_info)
   # overfitting_prepare(cfg_info)
-  nmt_check_overfitting_1(cfg_info)
+  # nmt_check_overfitting_1(cfg_info)
   # nmt_check_overfitting_2(cfg_info)
   # nmt_dev(cfg_info)
   # nmt_dev_res(cfg_info)
-
+  # nmt_make_backup(cfg_info)
   # nmt_test(cfg_info)
-
+  # bleu_score(cfg_info)
 
 if __name__ == "__main__" :
   print str (time.strftime('%Y-%m-%d %X',time.localtime(time.time())))
