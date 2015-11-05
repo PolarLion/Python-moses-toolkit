@@ -212,9 +212,10 @@ def main():
   #print count_sentences_len("/home/xwshi/easymoses_workspace/corpus/16/CHT.Train.true.zh") 
   #print count_sentences_len("/home/xwshi/easymoses_workspace/corpus/16/CHT.Train.true.en") 
   #print count_sentences_len("/home/xwshi/easymoses_workspace/evaluation/16/CHT.Test.true.en") 
-  id_dict = analyze_len_bleu("/home/xwshi/easymoses_workspace/evaluation/16/translation_result.txt.918")
+  # id_dict = analyze_len_bleu("/home/xwshi/easymoses_workspace/evaluation/16/translation_result.txt.918")
   # id_dict = analyze_len_bleu("/home/xwshi/easymoses_workspace/evaluation/17/translation_result.txt")
-  comparesmtnmt1("out17.txt","out16.txt", id_dict, "comm-16.txt")
+  # comparesmtnmt1("out17.txt","out16.txt", id_dict, "comm-16.txt")
+  count_sentences_len("/home/xwshi/data/Corpus-Bleu/7/C_B.Train.zh")
 
 if __name__=="__main__":
   main()

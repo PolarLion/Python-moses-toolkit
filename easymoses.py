@@ -19,10 +19,11 @@ nmt_path = "/home/xwshi/tools/GroundHog/experiments/nmt/"
 
 # easy_experiment_id = "k0"
 # easy_experiment_id = 18
-# easy_experiment_id = "nmt-CB-8x2"
+# easy_experiment_id = "nmt-CB-9"
 # easy_experiment_id = "smt-CB-9"
 # easy_experiment_id = "test"
-easy_experiment_id = "smt-NCB-3"
+# easy_experiment_id = "smt-NCB-3"
+easy_experiment_id = "smt-WCB-36"
 easy_corpus = ""
 easy_truecaser = ""
 easy_logs = "" 
@@ -652,11 +653,11 @@ def bleu_score(cfg_info):
 
 def easymoses ():
   preparation (cfg_info)
-  # corpus_preparation (cfg_info)
-  # language_model_training (cfg_info)
-  # training_translation_system (cfg_info)
+  corpus_preparation (cfg_info)
+  language_model_training (cfg_info)
+  training_translation_system (cfg_info)
   # tuning (cfg_info)
-  testing (cfg_info)
+  # testing (cfg_info)
   # cross_corpus("18", "nmt", "te", cfg_info)
   # cross_corpus("17", "smt", "te", cfg_info)
   # nplm (cfg_info)
