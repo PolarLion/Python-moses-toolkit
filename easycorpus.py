@@ -176,12 +176,15 @@ def count_corpus_words(path):
       count_frq += 1
   print count_frq
 
-def batch_create_corpus(inpath,opath, num=10, filenmae="C_B"):
+def batch_create_corpus(inpath,opath, num=10, filename="C_B"):
   dirs = os.listdir(inpath)
-  for i in range(0,num):
+  i = 0
+  while (i < num):
     oopath = os.path.join(opath, str(i))
-    osfile = open(os.path.join(oopath, filenmae+".Train.zh"),'w')
-    otfile = open(os.path.join(oopath, filenmae+".Train.en"),'w')
+    if not os.path.exists(oopath):
+      os.system("mkdir "+oopath)
+    osfile = open(os.path.join(oopath, filename+".Train.fr"),'w')
+    otfile = open(os.path.join(oopath, filename+".Train.en"),'w')
     for ii in range(0, i+1):
       iipath = os.path.join(inpath, str(ii))
       files = os.listdir(iipath)
@@ -189,9 +192,10 @@ def batch_create_corpus(inpath,opath, num=10, filenmae="C_B"):
         infile = open(os.path.join(iipath, afile),'r')
         if afile.split('.')[1] == 'en':
           otfile.write(infile.read())
-        elif afile.split('.')[1] == 'zh':
+        elif afile.split('.')[1] == 'fr':
           osfile.write(infile.read())
         infile.close()
+    i += 36
     osfile.close()
     otfile.close
 
@@ -301,6 +305,9 @@ def clear_chinese_messy_code(ifile, ofile, word_dict):
 
 def main():
   print "hello polarlion"
+  # wmt_dict = check_corpus("/home/xwshi/data/wmt/Bahdanau", "fr", "en")
+  # divide_corpus("/home/xwshi/data/wmt/Bahdanau","/home/xwshi/data/wmt/Bahdanau-divide", 181, wmt_dict)
+  # batch_create_corpus("/home/xwshi/data/wmt/Bahdanau-divide", "/home/xwshi/data/WMT-Corpus-Bleu", num=181, filename="WMT")
   #prepare_gale_corpus("/home/xwshi/data/ldc-zh-en/gale_p1_ch_blog", "/home/xwshi/data/ldc-zh-en/gale", "gale_p1_ch_blog")
   #batch_untar("/home/xwshi/data/ldc-zh-en/tgz", "/home/xwshi/data/ldc-zh-en/untgz/")
   #batch_prepare_gale_corpus("/home/xwshi/data/ldc-zh-en/untgz/", "/home/xwshi/data/ldc-zh-en/gale")
@@ -324,13 +331,15 @@ def main():
   # chinesetok("/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18/xpnt.zh.not", "/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18/xpnt.zh")
   # xpnt_dict = check_corpus("/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18", "zh", "en")
   # divide_corpus("/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18", "/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18_divide", 3, xpnt_dict)
-  batch_create_corpus("/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18_divide", "/home/xwshi/data/XCEPNTV1", 3, "XPNT")
-  for i in range(0,3):
+  # batch_create_corpus("/home/xwshi/data/ldc-zh-en/XCEPNTV1/ldc2002e18_divide", "/home/xwshi/data/XCEPNTV1", 3, "XPNT")
+
+  for i in range(0,9):
     a = 0
     #check_corpus("/home/xwshi/data/ldc-zh-en/gale-divide/"+str(i), "zh", "en")
     #check_corpus("/home/xwshi/data/Corpus-Bleu/"+str(i), "Train.zh", "Train.en")
     # check_corpus("/home/xwshi/data/CENMPT/"+str(i), "Train.zh", "Train.en")
-    check_corpus("/home/xwshi/data/XCEPNTV1/"+str(i), "Train.zh", "Train.en")
+    # check_corpus("/home/xwshi/data/XCEPNTV1/"+str(i), "Train.zh", "Train.en")
+    # check_corpus("/home/xwshi/data/WMT-Corpus-Bleu/"+str(i), "Train.fr", "Train.en")
 
 
 
